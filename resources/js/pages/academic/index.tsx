@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { formatDate } from '@/lib/utils';
 import AppLayout from '@/layouts/app-layout';
 import { type AcademicYear, type BreadcrumbItem, type Semester } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
@@ -107,7 +108,7 @@ export default function AcademicIndex({ years }: { years: AcademicYear[] }) {
                                         </div>
                                         {y.start_date && (
                                             <p className="text-muted-foreground text-xs tnum">
-                                                {y.start_date} → {y.end_date}
+                                                {formatDate(y.start_date)} → {formatDate(y.end_date)}
                                             </p>
                                         )}
                                     </div>

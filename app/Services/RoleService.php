@@ -18,6 +18,10 @@ class RoleService
 
     public function create(array $data): Role
     {
+        // المعرّف البرمجي يُولَّد تلقائيًا (لا يُدخله المستخدم)
+        $data['name'] = 'role_'.bin2hex(random_bytes(5));
+        $data['is_system'] = false;
+
         return Role::create($data);
     }
 

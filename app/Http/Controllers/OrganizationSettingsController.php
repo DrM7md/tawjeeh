@@ -26,14 +26,16 @@ class OrganizationSettingsController extends Controller
     // ---------- المراحل ----------
     public function storeStage(Request $request): RedirectResponse
     {
-        Stage::create($this->validateStage($request));
+        $data = $this->validateStage($request);
+        $data['code'] = 'stage_'.bin2hex(random_bytes(4)); // معرّف يُولَّد تلقائيًا
+        Stage::create($data);
 
         return back()->with('success', 'تم إضافة المرحلة');
     }
 
     public function updateStage(Request $request, Stage $stage): RedirectResponse
     {
-        $stage->update($this->validateStage($request, $stage->id));
+        $stage->update($this->validateStage($request));
 
         return back()->with('success', 'تم تحديث المرحلة');
     }
@@ -45,11 +47,10 @@ class OrganizationSettingsController extends Controller
         return back()->with('success', 'تم حذف المرحلة');
     }
 
-    private function validateStage(Request $request, ?int $id = null): array
+    private function validateStage(Request $request): array
     {
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:50', 'unique:stages,code'.($id ? ",$id" : '')],
             'sort_order' => ['nullable', 'integer', 'min:0'],
         ]);
     }
@@ -57,14 +58,16 @@ class OrganizationSettingsController extends Controller
     // ---------- التصنيفات ----------
     public function storeClassification(Request $request): RedirectResponse
     {
-        TeacherClassification::create($this->validateClassification($request));
+        $data = $this->validateClassification($request);
+        $data['code'] = 'class_'.bin2hex(random_bytes(4)); // معرّف يُولَّد تلقائيًا
+        TeacherClassification::create($data);
 
         return back()->with('success', 'تم إضافة التصنيف');
     }
 
     public function updateClassification(Request $request, TeacherClassification $classification): RedirectResponse
     {
-        $classification->update($this->validateClassification($request, $classification->id));
+        $classification->update($this->validateClassification($request));
 
         return back()->with('success', 'تم تحديث التصنيف');
     }
@@ -76,11 +79,10 @@ class OrganizationSettingsController extends Controller
         return back()->with('success', 'تم حذف التصنيف');
     }
 
-    private function validateClassification(Request $request, ?int $id = null): array
+    private function validateClassification(Request $request): array
     {
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:50', 'unique:teacher_classifications,code'.($id ? ",$id" : '')],
             'required_visits' => ['required', 'integer', 'min:1', 'max:10'],
             'color' => ['nullable', 'string', 'max:30'],
         ]);

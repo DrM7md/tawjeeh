@@ -3,7 +3,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Award, Building2, CalendarRange, ClipboardCheck, Database, FileSpreadsheet, History, LayoutGrid, Network, School, Settings2, ShieldCheck, Users } from 'lucide-react';
+import { Award, Building2, CalendarRange, ClipboardCheck, FileSpreadsheet, LayoutGrid, Network, School, Settings2, ShieldCheck, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -15,19 +15,17 @@ const mainNavItems: NavItem[] = [
     { title: 'تحكيم الاختبارات', url: '/reviews', icon: Award, permission: 'reviews.view.own' },
 ];
 
-// الهيكل التنظيمي (Phase 1)
+// الهيكل التنظيمي
 const organizationNavItems: NavItem[] = [
     { title: 'الأقسام', url: '/departments', icon: Building2, permission: 'departments.view' },
     { title: 'المدارس', url: '/schools', icon: School, permission: 'schools.view' },
     { title: 'المستخدمون', url: '/users', icon: Users, permission: 'users.view' },
     { title: 'الأدوار والصلاحيات', url: '/roles', icon: ShieldCheck, permission: 'roles.view' },
-    { title: 'إعدادات الهيكل', url: '/organization-settings', icon: Settings2, permission: 'settings.manage' },
 ];
 
-// النظام (Phase 8)
-const systemNavItems: NavItem[] = [
-    { title: 'سجل النشاط', url: '/audit', icon: History, permission: 'audit.view' },
-    { title: 'النسخ الاحتياطي', url: '/backups', icon: Database, permission: 'backup.manage' },
+// أخرى — الإعدادات تجمع (إعدادات الهيكل/الأدوار/سجل النشاط/النسخ الاحتياطي + الحساب)
+const otherNavItems: NavItem[] = [
+    { title: 'الإعدادات', url: '/settings', icon: Settings2 },
 ];
 
 export function AppSidebar() {
@@ -48,7 +46,7 @@ export function AppSidebar() {
             <SidebarContent>
                 <NavMain items={mainNavItems} label="الرئيسية" />
                 <NavMain items={organizationNavItems} label="الهيكل التنظيمي" />
-                <NavMain items={systemNavItems} label="النظام" />
+                <NavMain items={otherNavItems} label="أخرى" />
             </SidebarContent>
 
             <SidebarFooter>

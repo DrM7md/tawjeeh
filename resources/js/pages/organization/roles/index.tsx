@@ -32,8 +32,7 @@ export default function RolesIndex({ roles, permissionGroups }: { roles: Role[];
     const [editing, setEditing] = useState<Role | null>(null);
     const [deleting, setDeleting] = useState<Role | null>(null);
 
-    const form = useForm<{ name: string; display_name: string; level: number; permissions: string[] }>({
-        name: '',
+    const form = useForm<{ display_name: string; level: number; permissions: string[] }>({
         display_name: '',
         level: 3,
         permissions: [],
@@ -49,7 +48,7 @@ export default function RolesIndex({ roles, permissionGroups }: { roles: Role[];
     const openEdit = (r: Role) => {
         setEditing(r);
         form.clearErrors();
-        form.setData({ name: r.name, display_name: r.display_name, level: r.level, permissions: r.permissions ?? [] });
+        form.setData({ display_name: r.display_name, level: r.level, permissions: r.permissions ?? [] });
         setDialogOpen(true);
     };
 
@@ -156,21 +155,9 @@ export default function RolesIndex({ roles, permissionGroups }: { roles: Role[];
             >
                 <FormSection>
                     <div className="space-y-2">
-                        <Label htmlFor="display_name">الاسم المعروض</Label>
+                        <Label htmlFor="display_name">اسم الدور</Label>
                         <Input id="display_name" value={form.data.display_name} onChange={(e) => form.setData('display_name', e.target.value)} />
                         {form.errors.display_name && <p className="text-destructive text-xs">{form.errors.display_name}</p>}
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="name">المعرّف البرمجي (إنجليزي)</Label>
-                        <Input
-                            id="name"
-                            value={form.data.name}
-                            onChange={(e) => form.setData('name', e.target.value)}
-                            dir="ltr"
-                            disabled={editing?.is_system}
-                            placeholder="custom_role"
-                        />
-                        {form.errors.name && <p className="text-destructive text-xs">{form.errors.name}</p>}
                     </div>
                     <div className="space-y-2">
                         <Label>المستوى الإداري</Label>

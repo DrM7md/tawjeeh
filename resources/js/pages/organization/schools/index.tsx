@@ -32,7 +32,7 @@ export default function SchoolsIndex({ schools, stages }: { schools: School[]; s
     const [editing, setEditing] = useState<School | null>(null);
     const [deleting, setDeleting] = useState<School | null>(null);
 
-    const form = useForm({ name: '', code: '', stage_id: '' as string, gender: '' as string, zone: '', is_active: true });
+    const form = useForm({ name: '', stage_id: '', gender: '', zone: '', is_active: true });
 
     const openCreate = () => {
         setEditing(null);
@@ -46,7 +46,6 @@ export default function SchoolsIndex({ schools, stages }: { schools: School[]; s
         form.clearErrors();
         form.setData({
             name: s.name,
-            code: s.code ?? '',
             stage_id: s.stage_id ? String(s.stage_id) : '',
             gender: s.gender ?? '',
             zone: s.zone ?? '',
@@ -79,7 +78,6 @@ export default function SchoolsIndex({ schools, stages }: { schools: School[]; s
 
     const columns: ColumnDef<School>[] = [
         { accessorKey: 'name', header: 'المدرسة', cell: ({ row }) => <span className="font-medium">{row.original.name}</span> },
-        { accessorKey: 'code', header: 'الرمز', cell: ({ row }) => row.original.code || '—' },
         { id: 'stage', header: 'المرحلة', cell: ({ row }) => row.original.stage?.name ?? '—' },
         { accessorKey: 'gender', header: 'النوع', cell: ({ row }) => (row.original.gender ? genderLabels[row.original.gender] : '—') },
         { accessorKey: 'zone', header: 'المنطقة', cell: ({ row }) => row.original.zone || '—' },
@@ -138,11 +136,6 @@ export default function SchoolsIndex({ schools, stages }: { schools: School[]; s
                         <Label htmlFor="name">اسم المدرسة</Label>
                         <Input id="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
                         {form.errors.name && <p className="text-destructive text-xs">{form.errors.name}</p>}
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="code">الرمز</Label>
-                        <Input id="code" value={form.data.code} onChange={(e) => form.setData('code', e.target.value)} />
-                        {form.errors.code && <p className="text-destructive text-xs">{form.errors.code}</p>}
                     </div>
                     <div className="space-y-2">
                         <Label>المرحلة</Label>

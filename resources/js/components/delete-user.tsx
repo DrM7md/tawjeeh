@@ -33,27 +33,26 @@ export default function DeleteUser() {
 
     return (
         <div className="space-y-6">
-            <HeadingSmall title="Delete account" description="Delete your account and all of its resources" />
+            <HeadingSmall title="حذف الحساب" description="حذف حسابك وكل بياناته نهائيًا" />
             <div className="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10">
                 <div className="relative space-y-0.5 text-red-600 dark:text-red-100">
-                    <p className="font-medium">Warning</p>
-                    <p className="text-sm">Please proceed with caution, this cannot be undone.</p>
+                    <p className="font-medium">تحذير</p>
+                    <p className="text-sm">يرجى الحذر، لا يمكن التراجع عن هذا الإجراء.</p>
                 </div>
 
                 <Dialog>
                     <DialogTrigger asChild>
-                        <Button variant="destructive">Delete account</Button>
+                        <Button variant="destructive">حذف الحساب</Button>
                     </DialogTrigger>
                     <DialogContent>
-                        <DialogTitle>Are you sure you want to delete your account?</DialogTitle>
+                        <DialogTitle>هل أنت متأكد من حذف حسابك؟</DialogTitle>
                         <DialogDescription>
-                            Once your account is deleted, all of its resources and data will also be permanently deleted. Please enter your password
-                            to confirm you would like to permanently delete your account.
+                            بمجرد حذف الحساب، ستُحذف كل بياناته ومصادره نهائيًا. أدخل كلمة المرور لتأكيد رغبتك في الحذف الدائم.
                         </DialogDescription>
                         <form className="space-y-6" onSubmit={deleteUser}>
                             <div className="grid gap-2">
                                 <Label htmlFor="password" className="sr-only">
-                                    Password
+                                    كلمة المرور
                                 </Label>
 
                                 <Input
@@ -63,22 +62,23 @@ export default function DeleteUser() {
                                     ref={passwordInput}
                                     value={data.password}
                                     onChange={(e) => setData('password', e.target.value)}
-                                    placeholder="Password"
+                                    placeholder="كلمة المرور"
                                     autoComplete="current-password"
+                                    dir="ltr"
                                 />
 
                                 <InputError message={errors.password} />
                             </div>
 
-                            <DialogFooter>
+                            <DialogFooter className="gap-2">
                                 <DialogClose asChild>
                                     <Button variant="secondary" onClick={closeModal}>
-                                        Cancel
+                                        إلغاء
                                     </Button>
                                 </DialogClose>
 
                                 <Button variant="destructive" disabled={processing} asChild>
-                                    <button type="submit">Delete account</button>
+                                    <button type="submit">حذف الحساب</button>
                                 </Button>
                             </DialogFooter>
                         </form>

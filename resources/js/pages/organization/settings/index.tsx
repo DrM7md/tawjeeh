@@ -36,7 +36,7 @@ function StagesSection({ stages }: { stages: Stage[] }) {
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<Stage | null>(null);
     const [deleting, setDeleting] = useState<Stage | null>(null);
-    const form = useForm({ name: '', code: '', sort_order: 0 });
+    const form = useForm({ name: '', sort_order: 0 });
 
     const openCreate = () => {
         setEditing(null);
@@ -47,7 +47,7 @@ function StagesSection({ stages }: { stages: Stage[] }) {
     const openEdit = (s: Stage) => {
         setEditing(s);
         form.clearErrors();
-        form.setData({ name: s.name, code: s.code, sort_order: s.sort_order });
+        form.setData({ name: s.name, sort_order: s.sort_order });
         setOpen(true);
     };
     const submit = (e: React.FormEvent) => {
@@ -58,7 +58,6 @@ function StagesSection({ stages }: { stages: Stage[] }) {
 
     const columns: ColumnDef<Stage>[] = [
         { accessorKey: 'name', header: 'المرحلة', cell: ({ row }) => <span className="font-medium">{row.original.name}</span> },
-        { accessorKey: 'code', header: 'الرمز' },
         { accessorKey: 'sort_order', header: 'الترتيب', cell: ({ row }) => <span className="tnum">{row.original.sort_order}</span> },
         {
             id: 'actions',
@@ -88,11 +87,6 @@ function StagesSection({ stages }: { stages: Stage[] }) {
                         {form.errors.name && <p className="text-destructive text-xs">{form.errors.name}</p>}
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="s_code">الرمز</Label>
-                        <Input id="s_code" value={form.data.code} onChange={(e) => form.setData('code', e.target.value)} dir="ltr" />
-                        {form.errors.code && <p className="text-destructive text-xs">{form.errors.code}</p>}
-                    </div>
-                    <div className="space-y-2">
                         <Label htmlFor="s_order">الترتيب</Label>
                         <Input id="s_order" type="number" value={form.data.sort_order} onChange={(e) => form.setData('sort_order', Number(e.target.value))} />
                     </div>
@@ -116,7 +110,7 @@ function ClassificationsSection({ classifications }: { classifications: TeacherC
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<TeacherClassification | null>(null);
     const [deleting, setDeleting] = useState<TeacherClassification | null>(null);
-    const form = useForm({ name: '', code: '', required_visits: 1, color: '#34C759' });
+    const form = useForm({ name: '', required_visits: 1, color: '#34C759' });
 
     const openCreate = () => {
         setEditing(null);
@@ -127,7 +121,7 @@ function ClassificationsSection({ classifications }: { classifications: TeacherC
     const openEdit = (c: TeacherClassification) => {
         setEditing(c);
         form.clearErrors();
-        form.setData({ name: c.name, code: c.code, required_visits: c.required_visits, color: c.color ?? '#34C759' });
+        form.setData({ name: c.name, required_visits: c.required_visits, color: c.color ?? '#34C759' });
         setOpen(true);
     };
     const submit = (e: React.FormEvent) => {
@@ -147,7 +141,6 @@ function ClassificationsSection({ classifications }: { classifications: TeacherC
                 </div>
             ),
         },
-        { accessorKey: 'code', header: 'الرمز' },
         { accessorKey: 'required_visits', header: 'الزيارات المطلوبة', cell: ({ row }) => <span className="tnum">{row.original.required_visits}</span> },
         {
             id: 'actions',
@@ -175,11 +168,6 @@ function ClassificationsSection({ classifications }: { classifications: TeacherC
                         <Label htmlFor="c_name">الاسم</Label>
                         <Input id="c_name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
                         {form.errors.name && <p className="text-destructive text-xs">{form.errors.name}</p>}
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="c_code">الرمز</Label>
-                        <Input id="c_code" value={form.data.code} onChange={(e) => form.setData('code', e.target.value)} dir="ltr" />
-                        {form.errors.code && <p className="text-destructive text-xs">{form.errors.code}</p>}
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="c_visits">الزيارات المطلوبة</Label>

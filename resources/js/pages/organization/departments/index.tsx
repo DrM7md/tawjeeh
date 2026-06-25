@@ -36,7 +36,7 @@ export default function DepartmentsIndex({ departments, users }: PageProps) {
     const [editing, setEditing] = useState<Department | null>(null);
     const [deleting, setDeleting] = useState<Department | null>(null);
 
-    const form = useForm({ name: '', code: '', head_user_id: '' as string, color: '', is_active: true });
+    const form = useForm({ name: '', head_user_id: '', is_active: true });
 
     const openCreate = () => {
         setEditing(null);
@@ -50,9 +50,7 @@ export default function DepartmentsIndex({ departments, users }: PageProps) {
         form.clearErrors();
         form.setData({
             name: d.name,
-            code: d.code ?? '',
             head_user_id: d.head_user_id ? String(d.head_user_id) : '',
-            color: d.color ?? '',
             is_active: d.is_active,
         });
         setDialogOpen(true);
@@ -84,14 +82,8 @@ export default function DepartmentsIndex({ departments, users }: PageProps) {
         {
             accessorKey: 'name',
             header: 'القسم',
-            cell: ({ row }) => (
-                <div className="flex items-center gap-2">
-                    {row.original.color && <span className="size-3 rounded-full" style={{ backgroundColor: row.original.color }} />}
-                    <span className="font-medium">{row.original.name}</span>
-                </div>
-            ),
+            cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
         },
-        { accessorKey: 'code', header: 'الرمز', cell: ({ row }) => row.original.code || '—' },
         { id: 'head', header: 'رئيس القسم', cell: ({ row }) => row.original.head?.name ?? '—' },
         { accessorKey: 'users_count', header: 'الموجهون', cell: ({ row }) => <span className="tnum">{row.original.users_count ?? 0}</span> },
         {
@@ -146,15 +138,11 @@ export default function DepartmentsIndex({ departments, users }: PageProps) {
                 onSubmit={submit}
                 loading={form.processing}
             >
-                <FormSection>
+                <FormSection columns={1}>
                     <div className="space-y-2">
                         <Label htmlFor="name">اسم القسم</Label>
                         <Input id="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
                         {form.errors.name && <p className="text-destructive text-xs">{form.errors.name}</p>}
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="code">الرمز (اختياري)</Label>
-                        <Input id="code" value={form.data.code} onChange={(e) => form.setData('code', e.target.value)} />
                     </div>
                     <div className="space-y-2">
                         <Label>رئيس القسم</Label>
@@ -174,10 +162,6 @@ export default function DepartmentsIndex({ departments, users }: PageProps) {
                                 ))}
                             </SelectContent>
                         </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="color">اللون</Label>
-                        <Input id="color" type="color" value={form.data.color || '#8D1B3D'} onChange={(e) => form.setData('color', e.target.value)} className="h-10 w-20 p-1" />
                     </div>
                 </FormSection>
                 <label className="flex items-center gap-2 text-sm">

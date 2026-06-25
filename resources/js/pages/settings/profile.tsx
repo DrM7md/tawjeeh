@@ -14,7 +14,7 @@ import SettingsLayout from '@/layouts/settings/layout';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Profile settings',
+        title: 'الملف الشخصي',
         href: '/settings/profile',
     },
 ];
@@ -35,15 +35,15 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Profile settings" />
+            <Head title="الملف الشخصي" />
 
             <SettingsLayout>
                 <div className="space-y-6">
-                    <HeadingSmall title="Profile information" description="Update your name and email address" />
+                    <HeadingSmall title="معلومات الملف الشخصي" description="تعديل الاسم والبريد الإلكتروني" />
 
                     <form onSubmit={submit} className="space-y-6">
                         <div className="grid gap-2">
-                            <Label htmlFor="name">Name</Label>
+                            <Label htmlFor="name">الاسم</Label>
 
                             <Input
                                 id="name"
@@ -52,14 +52,14 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 onChange={(e) => setData('name', e.target.value)}
                                 required
                                 autoComplete="name"
-                                placeholder="Full name"
+                                placeholder="الاسم الكامل"
                             />
 
                             <InputError className="mt-2" message={errors.name} />
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="email">Email address</Label>
+                            <Label htmlFor="email">البريد الإلكتروني</Label>
 
                             <Input
                                 id="email"
@@ -69,7 +69,8 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 onChange={(e) => setData('email', e.target.value)}
                                 required
                                 autoComplete="username"
-                                placeholder="Email address"
+                                placeholder="البريد الإلكتروني"
+                                dir="ltr"
                             />
 
                             <InputError className="mt-2" message={errors.email} />
@@ -78,27 +79,27 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                         {mustVerifyEmail && auth.user.email_verified_at === null && (
                             <div>
                                 <p className="mt-2 text-sm text-neutral-800">
-                                    Your email address is unverified.
+                                    بريدك الإلكتروني غير مُوثَّق.
                                     <Link
                                         href={route('verification.send')}
                                         method="post"
                                         as="button"
                                         className="rounded-md text-sm text-neutral-600 underline hover:text-neutral-900 focus:ring-2 focus:ring-offset-2 focus:outline-hidden"
                                     >
-                                        Click here to re-send the verification email.
+                                        انقر هنا لإعادة إرسال رسالة التوثيق.
                                     </Link>
                                 </p>
 
                                 {status === 'verification-link-sent' && (
                                     <div className="mt-2 text-sm font-medium text-green-600">
-                                        A new verification link has been sent to your email address.
+                                        تم إرسال رابط توثيق جديد إلى بريدك الإلكتروني.
                                     </div>
                                 )}
                             </div>
                         )}
 
                         <div className="flex items-center gap-4">
-                            <Button disabled={processing}>Save</Button>
+                            <Button disabled={processing}>حفظ</Button>
 
                             <Transition
                                 show={recentlySuccessful}
@@ -107,7 +108,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 leave="transition ease-in-out"
                                 leaveTo="opacity-0"
                             >
-                                <p className="text-sm text-neutral-600">Saved</p>
+                                <p className="text-sm text-neutral-600">تم الحفظ</p>
                             </Transition>
                         </div>
                     </form>
