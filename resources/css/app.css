@@ -1,0 +1,286 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+@plugin 'tailwindcss-animate';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+    --font-sans: 'Tajawal', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+
+    /* الزوايا — نظام Apple */
+    --radius: 0.85rem;
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    --color-success: var(--success);
+    --color-success-foreground: var(--success-foreground);
+
+    --color-warning: var(--warning);
+    --color-warning-foreground: var(--warning-foreground);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    --color-sidebar: var(--sidebar-background);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+
+    /* Spring easing المرح */
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-border, currentColor);
+    }
+}
+
+/* ============== الوضع الفاتح (افتراضي) — Apple-Inspired ============== */
+:root {
+    --background: hsl(240, 11%, 96%); /* #F5F5F7 */
+    --foreground: hsl(240, 6%, 10%); /* #1D1D1F */
+
+    --card: hsl(0, 0%, 100%); /* #FFFFFF */
+    --card-foreground: hsl(240, 6%, 10%);
+
+    --popover: hsl(0, 0%, 100%);
+    --popover-foreground: hsl(240, 6%, 10%);
+
+    --primary: hsl(342, 68%, 33%); /* عنابي آبل #8D1B3D */
+    --primary-foreground: hsl(0, 0%, 100%);
+
+    --secondary: hsl(240, 9%, 95%); /* #F0F0F2 */
+    --secondary-foreground: hsl(240, 6%, 10%);
+
+    --muted: hsl(240, 9%, 95%); /* #F0F0F2 */
+    --muted-foreground: hsl(240, 2%, 44%); /* #6E6E73 */
+
+    --accent: hsl(240, 9%, 95%);
+    --accent-foreground: hsl(342, 68%, 33%);
+
+    --destructive: hsl(4, 100%, 59%); /* #FF3B30 */
+    --destructive-foreground: hsl(0, 0%, 100%);
+
+    --success: hsl(135, 59%, 49%); /* #34C759 */
+    --success-foreground: hsl(0, 0%, 100%);
+
+    --warning: hsl(37, 100%, 52%); /* #FF9F0A */
+    --warning-foreground: hsl(0, 0%, 100%);
+
+    --border: hsl(240, 6%, 90%); /* #E5E5E7 */
+    --input: hsl(240, 6%, 90%);
+    --ring: hsl(342, 68%, 33%);
+
+    --chart-1: hsl(342, 68%, 45%);
+    --chart-2: hsl(173, 58%, 39%);
+    --chart-3: hsl(37, 100%, 52%);
+    --chart-4: hsl(212, 80%, 55%);
+    --chart-5: hsl(135, 59%, 49%);
+
+    /* الشريط الجانبي داكن دائمًا — #1D1D1F */
+    --sidebar-background: hsl(240, 6%, 10%);
+    --sidebar-foreground: hsl(240, 3%, 82%); /* #D1D1D3 */
+    --sidebar-primary: hsl(342, 68%, 45%);
+    --sidebar-primary-foreground: hsl(0, 0%, 100%);
+    --sidebar-accent: hsl(240, 5%, 16%);
+    --sidebar-accent-foreground: hsl(0, 0%, 100%);
+    --sidebar-border: hsl(240, 5%, 18%);
+    --sidebar-ring: hsl(342, 68%, 45%);
+}
+
+/* ============== الوضع الداكن ============== */
+.dark {
+    --background: hsl(240, 6%, 10%); /* #1D1D1F */
+    --foreground: hsl(240, 11%, 96%);
+
+    --card: hsl(240, 4%, 14%); /* #232325 */
+    --card-foreground: hsl(240, 11%, 96%);
+
+    --popover: hsl(240, 4%, 14%);
+    --popover-foreground: hsl(240, 11%, 96%);
+
+    --primary: hsl(342, 62%, 48%); /* عنابي أفتح قليلًا للوضع الداكن */
+    --primary-foreground: hsl(0, 0%, 100%);
+
+    --secondary: hsl(240, 4%, 18%);
+    --secondary-foreground: hsl(240, 11%, 96%);
+
+    --muted: hsl(240, 4%, 18%);
+    --muted-foreground: hsl(240, 5%, 65%);
+
+    --accent: hsl(240, 4%, 20%);
+    --accent-foreground: hsl(342, 62%, 65%);
+
+    --destructive: hsl(4, 90%, 58%);
+    --destructive-foreground: hsl(0, 0%, 100%);
+
+    --success: hsl(135, 55%, 45%);
+    --success-foreground: hsl(0, 0%, 100%);
+
+    --warning: hsl(37, 95%, 50%);
+    --warning-foreground: hsl(0, 0%, 100%);
+
+    --border: hsl(240, 4%, 22%);
+    --input: hsl(240, 4%, 24%);
+    --ring: hsl(342, 62%, 55%);
+
+    --chart-1: hsl(342, 62%, 58%);
+    --chart-2: hsl(173, 50%, 50%);
+    --chart-3: hsl(37, 90%, 55%);
+    --chart-4: hsl(212, 70%, 60%);
+    --chart-5: hsl(135, 55%, 55%);
+
+    /* الشريط الجانبي يبقى داكنًا */
+    --sidebar-background: hsl(240, 6%, 8%);
+    --sidebar-foreground: hsl(240, 3%, 82%);
+    --sidebar-primary: hsl(342, 62%, 55%);
+    --sidebar-primary-foreground: hsl(0, 0%, 100%);
+    --sidebar-accent: hsl(240, 5%, 16%);
+    --sidebar-accent-foreground: hsl(0, 0%, 100%);
+    --sidebar-border: hsl(240, 5%, 16%);
+    --sidebar-ring: hsl(342, 62%, 55%);
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    html {
+        direction: rtl;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+        font-feature-settings: 'kern';
+    }
+
+    /* أرقام لاتينية مصطفّة للأعمدة الرقمية */
+    .tnum {
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: 'tnum';
+    }
+}
+
+/* ============== فئات مساعدة لنظام التصميم ============== */
+@layer utilities {
+    /* تأثير زجاجي (glassmorphism) للبطاقات الإحصائية والنوافذ */
+    .glass {
+        background-color: color-mix(in srgb, var(--card) 70%, transparent);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+    }
+
+    .glass-strong {
+        background-color: color-mix(in srgb, var(--card) 95%, transparent);
+        backdrop-filter: blur(28px) saturate(180%);
+        -webkit-backdrop-filter: blur(28px) saturate(180%);
+    }
+
+    /* ظل فاخر للنوافذ */
+    .shadow-luxe {
+        box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.25);
+    }
+
+    /* حركة الرفع عند المرور للبطاقات */
+    .hover-lift {
+        transition: transform 0.2s var(--ease-spring), box-shadow 0.2s ease;
+    }
+    .hover-lift:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px -10px rgba(0, 0, 0, 0.18);
+    }
+}
+
+/* ============== حركات مرحة ============== */
+@keyframes wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    20% { transform: rotate(-12deg); }
+    40% { transform: rotate(10deg); }
+    60% { transform: rotate(-6deg); }
+    80% { transform: rotate(4deg); }
+}
+.animate-wiggle {
+    animation: wiggle 0.6s var(--ease-spring);
+}
+
+/* احترام تفضيل تقليل الحركة */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ============== الطباعة (A4 RTL) ============== */
+@media print {
+    @page {
+        size: A4;
+        margin: 2cm;
+    }
+
+    * {
+        print-color-adjust: exact !important;
+        -webkit-print-color-adjust: exact !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+    }
+
+    .no-print,
+    [data-sidebar],
+    header[data-app-header] {
+        display: none !important;
+    }
+
+    body {
+        background: #fff !important;
+    }
+}
