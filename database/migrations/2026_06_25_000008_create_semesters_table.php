@@ -15,7 +15,6 @@ return new class extends Migration
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->boolean('is_active')->default(false); // واحد نشط داخل العام (SM-2)
-            $table->enum('status', ['not_started', 'active', 'ended', 'closed'])->default('not_started');
             $table->timestamps();
 
             $table->index(['academic_year_id', 'is_active']);

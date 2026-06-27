@@ -14,28 +14,47 @@ class DistributionController extends Controller
 
     public function index(Request $request): Response
     {
-        $departments = $this->service->availableDepartments($request->user());
-        $departmentId = $this->resolveDepartment($request, $departments);
+        $user = $request->user();
+        $departments = $this->service->availableDepartments($user);
+        $canAll = $user->isSuper() || $user->isLevel(1);
+
+        $requested = $request->integer('department') ?: $request->integer('department_id');
+        $allowed = $departments->pluck('id')->all();
+        $departmentId = $requested && in_array($requested, $allowed, true) ? $requested : null;
+
+        // رئيس قسم (قسم واحد): يدخل مباشرة على لوحة قسمه.
+        if ($departmentId === null && ! $canAll) {
+            $departmentId = $allowed[0] ?? null;
+        }
+
+        // رئيس التوجيه بلا قسم مختار: بطاقات الأقسام (المستوى الأعلى).
+        if ($canAll && $departmentId === null) {
+            return Inertia::render('distribution/index', [
+                'view' => 'departments',
+                'departmentCards' => $this->service->departmentBoards(),
+            ]);
+        }
 
         return Inertia::render('distribution/index', [
+            'view' => 'board',
             'departments' => $departments,
             'selectedDepartmentId' => $departmentId,
             'overview' => $departmentId ? $this->service->overview($departmentId) : null,
+            'preview' => $request->session()->get('preview'),
+            'canDrillDepartments' => $canAll,
         ]);
     }
 
-    public function autoPreview(Request $request): Response
+    public function autoPreview(Request $request): RedirectResponse
     {
         $departments = $this->service->availableDepartments($request->user());
         $departmentId = $this->resolveDepartment($request, $departments);
         $scope = $request->input('scope', 'unassigned');
 
-        return Inertia::render('distribution/index', [
-            'departments' => $departments,
-            'selectedDepartmentId' => $departmentId,
-            'overview' => $departmentId ? $this->service->overview($departmentId) : null,
-            'preview' => $departmentId ? $this->service->autoDistributePreview($departmentId, $scope) : null,
-        ]);
+        // معاينة فقط: نُمرّر النتيجة عبر الجلسة ونعيد التوجيه (303) لإبقاء المسار GET آمنًا عند التحديث.
+        return redirect()
+            ->route('distribution.index', ['department' => $departmentId], 303)
+            ->with('preview', $departmentId ? $this->service->autoDistributePreview($departmentId, $scope) : null);
     }
 
     public function apply(Request $request): RedirectResponse
@@ -93,7 +112,7 @@ class DistributionController extends Controller
     /** يحدّد القسم المطلوب مع احترام نطاق المستخدم. */
     private function resolveDepartment(Request $request, $departments): ?int
     {
-        $requested = $request->integer('department');
+        $requested = $request->integer('department') ?: $request->integer('department_id');
         $allowed = $departments->pluck('id')->all();
 
         if ($requested && in_array($requested, $allowed, true)) {

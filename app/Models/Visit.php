@@ -6,6 +6,7 @@ use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToAcademicContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
@@ -15,12 +16,32 @@ class Visit extends Model
 
     protected $fillable = [
         'academic_year_id', 'semester_id', 'supervisor_id', 'school_id', 'department_id',
-        'visit_type', 'visitable_type', 'visitable_id', 'visit_date', 'status', 'created_by',
+        'template_id', 'visit_type', 'section', 'lesson_topic', 'follow_up_type',
+        'visitable_type', 'visitable_id', 'visit_date', 'visit_number', 'overall_rating',
+        'status', 'created_by',
     ];
 
     protected function casts(): array
     {
-        return ['visit_date' => 'date'];
+        return [
+            'visit_date' => 'date',
+            'overall_rating' => 'decimal:2',
+        ];
+    }
+
+    public function template(): BelongsTo
+    {
+        return $this->belongsTo(VisitTemplate::class, 'template_id');
+    }
+
+    public function ratings(): HasMany
+    {
+        return $this->hasMany(VisitRating::class);
+    }
+
+    public function followups(): HasMany
+    {
+        return $this->hasMany(VisitFollowup::class);
     }
 
     public function visitable(): MorphTo

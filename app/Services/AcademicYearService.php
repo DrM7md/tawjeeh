@@ -13,7 +13,7 @@ class AcademicYearService
     {
         return AcademicYear::query()
             ->withCount('semesters')
-            ->with('semesters:id,academic_year_id,name,is_active,status')
+            ->with('semesters:id,academic_year_id,name,is_active')
             ->orderByDesc('start_date')
             ->orderByDesc('id')
             ->get();
@@ -24,14 +24,13 @@ class AcademicYearService
         return DB::transaction(function () use ($data, $generateSemesters) {
             $year = AcademicYear::create([
                 ...$data,
-                'status' => $data['status'] ?? 'active',
                 'created_by' => auth()->id(),
             ]);
 
             if ($generateSemesters) {
                 $year->semesters()->createMany([
-                    ['name' => 'الفصل الأول', 'status' => 'not_started'],
-                    ['name' => 'الفصل الثاني', 'status' => 'not_started'],
+                    ['name' => 'الفصل الأول'],
+                    ['name' => 'الفصل الثاني'],
                 ]);
             }
 
@@ -46,31 +45,15 @@ class AcademicYearService
         return $year;
     }
 
-    /** تفعيل عام واحد فقط (AY-1) — ذرّيًا. */
+    /** تفعيل عام واحد فقط (AY-1) — ذرّيًا. يُلغى تفعيل البقية. */
     public function activate(AcademicYear $year): AcademicYear
     {
         DB::transaction(function () use ($year) {
             AcademicYear::where('id', '!=', $year->id)->update(['is_active' => false]);
-            $year->update(['is_active' => true, 'status' => 'active']);
+            $year->update(['is_active' => true]);
         });
 
         return $year->refresh();
-    }
-
-    /** إغلاق العام (يُمنع التعديل، يبقى للعرض) — AY/SM rules. */
-    public function close(AcademicYear $year): AcademicYear
-    {
-        $year->update(['is_active' => false, 'status' => 'closed']);
-
-        return $year;
-    }
-
-    /** أرشفة العام (لا حذف للبيانات) — AY-3. */
-    public function archive(AcademicYear $year): AcademicYear
-    {
-        $year->update(['is_active' => false, 'status' => 'archived']);
-
-        return $year;
     }
 
     public function delete(AcademicYear $year): void

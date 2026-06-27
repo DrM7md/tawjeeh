@@ -40,6 +40,15 @@ class Permissions
                 'schools.view' => 'عرض المدارس',
                 'schools.manage' => 'إدارة المدارس',
             ]],
+            'coordinators' => ['label' => 'المنسقون', 'permissions' => [
+                'coordinators.view' => 'عرض المنسقين',
+                'coordinators.manage' => 'إدارة المنسقين (تنزيل/تعديل)',
+            ]],
+            'classification' => ['label' => 'التصنيف ومتطلبات المتابعة', 'permissions' => [
+                'classification.view' => 'عرض لوحة التصنيف والالتزام',
+                'classification.classify' => 'تصنيف معلم/منسق',
+                'classification.approve' => 'اعتماد التصنيف',
+            ]],
             'academic' => ['label' => 'الأعوام والفصول', 'permissions' => [
                 'academic.view' => 'عرض الأعوام والفصول',
                 'academic.manage' => 'إدارة الأعوام والفصول',
@@ -53,6 +62,12 @@ class Permissions
             'import' => ['label' => 'الاستيراد', 'permissions' => [
                 'import.view' => 'عرض سجل الاستيراد',
                 'import.run' => 'تنفيذ استيراد',
+            ]],
+            'planning' => ['label' => 'التخطيط (خطة الموجّه)', 'permissions' => [
+                'planning.view.own' => 'عرض خطته',
+                'planning.view.department' => 'عرض خطط القسم',
+                'planning.create' => 'إنشاء/تعديل الخطة',
+                'planning.approve' => 'اعتماد/إرجاع الخطة',
             ]],
             'visits' => ['label' => 'الزيارات', 'permissions' => [
                 'visits.view.own' => 'عرض زياراته',
@@ -73,6 +88,20 @@ class Permissions
                 'reviews.view.all' => 'عرض كل التحكيمات',
                 'reviews.create' => 'إنشاء تحكيم',
                 'reviews.finalize' => 'اعتماد تحكيم',
+            ]],
+            'portfolios' => ['label' => 'تقييم ملفات المنسق', 'permissions' => [
+                'portfolios.view.own' => 'عرض تقييماته',
+                'portfolios.view.department' => 'عرض تقييمات القسم',
+                'portfolios.view.all' => 'عرض كل التقييمات',
+                'portfolios.create' => 'إنشاء تقييم ملفات',
+                'portfolios.finalize' => 'اعتماد تقييم ملفات',
+            ]],
+            'improvement' => ['label' => 'خطط التحسين والتطوير', 'permissions' => [
+                'improvement.view.own' => 'عرض خططه',
+                'improvement.view.department' => 'عرض خطط القسم',
+                'improvement.view.all' => 'عرض كل الخطط',
+                'improvement.create' => 'إنشاء خطة',
+                'improvement.update' => 'تعديل خطة وإضافة مراجعات',
             ]],
             'reports' => ['label' => 'المؤشرات والتقارير', 'permissions' => [
                 'reports.department' => 'تقارير القسم',
@@ -113,22 +142,32 @@ class Permissions
             'users.view',
             'departments.view',
             'schools.view', 'schools.manage',
+            'coordinators.view', 'coordinators.manage',
+            'classification.view', 'classification.classify', 'classification.approve',
             'academic.view',
             'distribution.view', 'distribution.auto', 'distribution.manual', 'distribution.redistribute',
             'import.view', 'import.run',
+            'planning.view.own', 'planning.view.department', 'planning.approve',
             'visits.view.own', 'visits.view.department',
             'forms.review',
             'reviews.view.own', 'reviews.view.department',
+            'portfolios.view.own', 'portfolios.view.department',
+            'improvement.view.own', 'improvement.view.department', 'improvement.create', 'improvement.update',
             'reports.department', 'reports.export',
         ];
 
         $supervisor = [
             'schools.view',
+            'coordinators.view',
+            'classification.view', 'classification.classify',
             'academic.view',
             'import.view', 'import.run',
+            'planning.view.own', 'planning.create',
             'visits.view.own', 'visits.create', 'visits.update', 'visits.finalize',
             'forms.fill', 'forms.finalize',
             'reviews.view.own', 'reviews.create', 'reviews.finalize',
+            'portfolios.view.own', 'portfolios.create', 'portfolios.finalize',
+            'improvement.view.own', 'improvement.create', 'improvement.update',
         ];
 
         return [

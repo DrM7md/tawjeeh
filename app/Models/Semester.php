@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Semester extends Model
 {
-    protected $fillable = ['academic_year_id', 'name', 'start_date', 'end_date', 'is_active', 'status'];
+    protected $fillable = ['academic_year_id', 'name', 'start_date', 'end_date', 'is_active'];
 
     protected function casts(): array
     {
@@ -23,8 +23,9 @@ class Semester extends Model
         return $this->belongsTo(AcademicYear::class);
     }
 
-    public function isEditable(): bool
+    /** الفصل «منتهٍ» إذا تجاوز تاريخ نهايته اليوم — يُشتق من التاريخ لا من حالة يدوية. */
+    public function hasEnded(): bool
     {
-        return $this->status === 'active';
+        return (bool) $this->end_date?->isPast();
     }
 }

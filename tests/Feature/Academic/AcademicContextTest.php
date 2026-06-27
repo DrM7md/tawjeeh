@@ -38,7 +38,7 @@ class AcademicContextTest extends TestCase
     {
         $service = app(AcademicYearService::class);
         $old = AcademicYear::where('is_active', true)->first();
-        $new = AcademicYear::create(['name' => '2027–2028', 'status' => 'active']);
+        $new = AcademicYear::create(['name' => '2027–2028']);
 
         $service->activate($new);
 
@@ -70,7 +70,7 @@ class AcademicContextTest extends TestCase
 
     public function test_context_switch_route_changes_selected_year(): void
     {
-        $other = AcademicYear::create(['name' => '2025–2026', 'status' => 'closed', 'is_active' => false]);
+        $other = AcademicYear::create(['name' => '2025–2026', 'is_active' => false]);
 
         $this->actingAs($this->admin)
             ->post('/context', ['year_id' => $other->id])

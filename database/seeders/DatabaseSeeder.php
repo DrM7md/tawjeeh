@@ -16,6 +16,8 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(ReferenceDataSeeder::class);
+        $this->call(SupervisionTemplateSeeder::class);
+        $this->call(PortfolioTemplateSeeder::class);
 
         // مستخدم رئيس التوجيه (admin)
         $admin = User::updateOrCreate(

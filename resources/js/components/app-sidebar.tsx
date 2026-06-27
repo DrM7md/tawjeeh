@@ -1,24 +1,27 @@
 import { NavMain } from '@/components/nav-main';
-import { NavUser } from '@/components/nav-user';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Award, Building2, CalendarRange, ClipboardCheck, FileSpreadsheet, LayoutGrid, Network, School, Settings2, ShieldCheck, Users } from 'lucide-react';
+import { Award, Building2, CalendarRange, ClipboardCheck, ClipboardList, FolderCheck, LayoutGrid, Layers, Network, School, Settings2, ShieldCheck, TrendingUp, UserCheck, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
     { title: 'لوحة التحكم', url: '/dashboard', icon: LayoutGrid },
     { title: 'الأعوام الدراسية', url: '/academic', icon: CalendarRange, permission: 'academic.view' },
     { title: 'توزيع المدارس', url: '/distribution', icon: Network, permission: 'distribution.view' },
-    { title: 'استيراد المدارس', url: '/import', icon: FileSpreadsheet, permission: 'import.view' },
+    { title: 'التصنيف والالتزام', url: '/classification', icon: Layers, permission: 'classification.view' },
+    { title: 'خطة الموجّه', url: '/planning', icon: ClipboardList, permission: 'planning.view.own' },
     { title: 'الزيارات والمتابعة', url: '/visits', icon: ClipboardCheck, permission: 'visits.view.own' },
     { title: 'تحكيم الاختبارات', url: '/reviews', icon: Award, permission: 'reviews.view.own' },
+    { title: 'تقييم ملفات المنسق', url: '/portfolios', icon: FolderCheck, permission: 'portfolios.view.own' },
+    { title: 'خطط التحسين والتطوير', url: '/improvement', icon: TrendingUp, permission: 'improvement.view.own' },
 ];
 
 // الهيكل التنظيمي
 const organizationNavItems: NavItem[] = [
     { title: 'الأقسام', url: '/departments', icon: Building2, permission: 'departments.view' },
     { title: 'المدارس', url: '/schools', icon: School, permission: 'schools.view' },
+    { title: 'المنسقون', url: '/coordinators', icon: UserCheck, permission: 'coordinators.view' },
     { title: 'المستخدمون', url: '/users', icon: Users, permission: 'users.view' },
     { title: 'الأدوار والصلاحيات', url: '/roles', icon: ShieldCheck, permission: 'roles.view' },
 ];
@@ -48,10 +51,6 @@ export function AppSidebar() {
                 <NavMain items={organizationNavItems} label="الهيكل التنظيمي" />
                 <NavMain items={otherNavItems} label="أخرى" />
             </SidebarContent>
-
-            <SidebarFooter>
-                <NavUser />
-            </SidebarFooter>
         </Sidebar>
     );
 }

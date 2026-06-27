@@ -10,10 +10,7 @@ class SemesterService
 {
     public function create(AcademicYear $year, array $data): Semester
     {
-        return $year->semesters()->create([
-            ...$data,
-            'status' => $data['status'] ?? 'not_started',
-        ]);
+        return $year->semesters()->create($data);
     }
 
     public function update(Semester $semester, array $data): Semester
@@ -30,18 +27,10 @@ class SemesterService
             Semester::where('academic_year_id', $semester->academic_year_id)
                 ->where('id', '!=', $semester->id)
                 ->update(['is_active' => false]);
-            $semester->update(['is_active' => true, 'status' => 'active']);
+            $semester->update(['is_active' => true]);
         });
 
         return $semester->refresh();
-    }
-
-    /** إغلاق الفصل (يُمنع التعديل، تبقى المؤشرات متاحة) — SM-5. */
-    public function close(Semester $semester): Semester
-    {
-        $semester->update(['is_active' => false, 'status' => 'closed']);
-
-        return $semester;
     }
 
     public function delete(Semester $semester): void

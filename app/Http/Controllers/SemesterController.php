@@ -34,13 +34,6 @@ class SemesterController extends Controller
         return back()->with('success', "تم تفعيل «{$semester->name}»");
     }
 
-    public function close(Semester $semester): RedirectResponse
-    {
-        $this->service->close($semester);
-
-        return back()->with('success', 'تم إغلاق الفصل');
-    }
-
     public function destroy(Semester $semester): RedirectResponse
     {
         $this->service->delete($semester);

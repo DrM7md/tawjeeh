@@ -9,13 +9,6 @@ export function useAcademicContext(): AcademicContext | null {
     return props.context ?? null;
 }
 
-const yearSuffix = (status: string, isActive: boolean): string => {
-    if (isActive) return ' • نشط';
-    if (status === 'archived') return ' • أرشيف';
-    if (status === 'closed') return ' • مغلق';
-    return '';
-};
-
 /** محدّد العام/الفصل الدراسي في الترويسة. عند التبديل تُعاد كل بيانات الصفحة. */
 export function ContextSwitcher() {
     const context = useAcademicContext();
@@ -30,18 +23,18 @@ export function ContextSwitcher() {
     };
 
     return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
             <div className="flex items-center gap-1.5">
-                <CalendarDays className="text-muted-foreground size-4" />
+                <CalendarDays className="text-muted-foreground hidden size-4 sm:block" />
                 <Select value={context.selectedYearId ? String(context.selectedYearId) : undefined} onValueChange={changeYear}>
-                    <SelectTrigger className="h-9 min-w-[130px] text-xs">
+                    <SelectTrigger className="h-9 min-w-[92px] text-xs sm:min-w-[130px]">
                         <SelectValue placeholder="العام" />
                     </SelectTrigger>
                     <SelectContent>
                         {context.years.map((y) => (
                             <SelectItem key={y.id} value={String(y.id)}>
                                 {y.name}
-                                {yearSuffix(y.status, y.is_active)}
+                                {y.is_active ? ' • فعّال' : ''}
                             </SelectItem>
                         ))}
                     </SelectContent>
@@ -50,9 +43,9 @@ export function ContextSwitcher() {
 
             {context.semesters.length > 0 && (
                 <div className="flex items-center gap-1.5">
-                    <BookOpen className="text-muted-foreground size-4" />
+                    <BookOpen className="text-muted-foreground hidden size-4 sm:block" />
                     <Select value={context.selectedSemesterId ? String(context.selectedSemesterId) : undefined} onValueChange={changeSemester}>
-                        <SelectTrigger className="h-9 min-w-[120px] text-xs">
+                        <SelectTrigger className="h-9 min-w-[84px] text-xs sm:min-w-[120px]">
                             <SelectValue placeholder="الفصل" />
                         </SelectTrigger>
                         <SelectContent>

@@ -101,12 +101,10 @@ class ActiveContext
         return $id ? Semester::find($id) : null;
     }
 
-    /** هل العام المختار قابل للتعديل (نشط)؟ تُمنع الكتابة خلاف ذلك. */
+    /** هل العام المختار قابل للتعديل؟ فقط العام الفعّال — تُمنع الكتابة خلاف ذلك. */
     public function isEditable(): bool
     {
-        $year = $this->selectedYear();
-
-        return $year !== null && $year->is_active && $year->status === 'active';
+        return (bool) $this->selectedYear()?->is_active;
     }
 
     /* ===================== ضبط الاختيار ===================== */
@@ -127,12 +125,12 @@ class ActiveContext
     /** @return array<string, mixed> */
     public function share(): array
     {
-        $years = AcademicYear::orderByDesc('start_date')->orderByDesc('id')->get(['id', 'name', 'is_active', 'status']);
+        $years = AcademicYear::orderByDesc('start_date')->orderByDesc('id')->get(['id', 'name', 'is_active']);
         $selectedYearId = $this->selectedYearId();
 
         /** @var Collection<int, Semester> $semesters */
         $semesters = $selectedYearId
-            ? Semester::where('academic_year_id', $selectedYearId)->orderBy('id')->get(['id', 'name', 'is_active', 'status', 'academic_year_id'])
+            ? Semester::where('academic_year_id', $selectedYearId)->orderBy('id')->get(['id', 'name', 'is_active', 'academic_year_id'])
             : collect();
 
         return [

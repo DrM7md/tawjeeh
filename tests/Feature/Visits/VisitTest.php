@@ -5,12 +5,10 @@ namespace Tests\Feature\Visits;
 use App\Models\Coordinator;
 use App\Models\Department;
 use App\Models\Role;
-use App\Models\School;
 use App\Models\SchoolAssignment;
 use App\Models\Teacher;
 use App\Models\TeacherClassification;
 use App\Models\User;
-use App\Models\Visit;
 use App\Services\VisitService;
 use App\Support\Permissions;
 use Database\Seeders\ReferenceDataSeeder;
@@ -24,6 +22,7 @@ class VisitTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private Department $dept;
 
     protected function setUp(): void
@@ -120,7 +119,7 @@ class VisitTest extends TestCase
         $teacher = Teacher::factory()->create(['department_id' => $this->dept->id]); // غير مسندة
 
         $this->actingAs($sup)
-            ->post('/visits', ['visit_type' => 'teacher', 'visitable_id' => $teacher->id, 'visit_date' => '2026-10-01'])
+            ->post('/visits', ['teacher_id' => $teacher->id, 'visit_date' => '2026-10-01'])
             ->assertForbidden();
     }
 
@@ -155,11 +154,66 @@ class VisitTest extends TestCase
         Storage::disk('local')->assertExists($visit->form->files()->first()->path);
     }
 
-    public function test_visits_page_renders(): void
+    public function test_head_sees_departments_board(): void
     {
         $this->actingAs($this->admin)
             ->get('/visits')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('visits/index')->has('followUp')->has('visits'));
+            ->assertInertia(fn ($page) => $page->component('visits/index')->where('view', 'departments')->has('departments'));
+    }
+
+    public function test_head_can_drill_into_department_supervisors(): void
+    {
+        $this->supervisor();
+
+        $this->actingAs($this->admin)
+            ->get('/visits?department='.$this->dept->id)
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('visits/index')
+                ->where('view', 'supervisors')
+                ->where('department.id', $this->dept->id)
+                ->has('supervisors'));
+    }
+
+    public function test_drilling_into_supervisor_shows_their_visits(): void
+    {
+        $sup = $this->supervisor();
+
+        $this->actingAs($this->admin)
+            ->get('/visits?supervisor='.$sup->id)
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('visits/index')
+                ->where('view', 'visits')
+                ->where('supervisor.id', $sup->id)
+                ->has('followUp')
+                ->has('visits'));
+    }
+
+    public function test_supervisor_sees_own_visits_board(): void
+    {
+        $sup = $this->supervisor();
+
+        $this->actingAs($sup)
+            ->get('/visits')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('visits/index')
+                ->where('view', 'visits')
+                ->where('supervisor', null)
+                ->has('followUp')
+                ->has('visits'));
+    }
+
+    public function test_department_head_cannot_view_other_department_supervisor(): void
+    {
+        $otherDept = Department::create(['name' => 'قسم آخر', 'is_active' => true]);
+        $foreignSup = User::factory()->create(['department_id' => $otherDept->id]);
+        $foreignSup->roles()->sync([Role::where('name', Permissions::ROLE_SUPERVISOR)->first()->id]);
+
+        $head = User::factory()->create(['department_id' => $this->dept->id]);
+        $head->roles()->sync([Role::where('name', Permissions::ROLE_DEPARTMENT_HEAD)->first()->id]);
+
+        $this->actingAs($head->fresh())
+            ->get('/visits?supervisor='.$foreignSup->id)
+            ->assertForbidden();
     }
 }

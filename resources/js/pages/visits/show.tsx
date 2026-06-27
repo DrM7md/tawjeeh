@@ -3,12 +3,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { formatDate } from '@/lib/utils';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { CheckCircle2, Download, FileUp, Save, Trash2 } from 'lucide-react';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 
 interface VisitFile {
@@ -58,6 +59,34 @@ export default function VisitShow({ visit, defaultAxes, canFinalize }: PageProps
         save_status: 'draft',
     });
 
+    // حفظ الاختيارات غير المعتمدة محليًا حتى تبقى عند الانتقال لصفحة أخرى والرجوع
+    const storageKey = `visit-form:${visit.id}`;
+    const { setData } = form;
+    useEffect(() => {
+        if (readOnly || globalThis.window === undefined) return;
+        const raw = localStorage.getItem(storageKey);
+        if (!raw) return;
+        try {
+            const saved = JSON.parse(raw);
+            setData((prev) => ({ ...prev, ...saved }));
+        } catch {
+            /* تجاهل أي بيانات محلية تالفة */
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    useEffect(() => {
+        if (readOnly || globalThis.window === undefined) return;
+        localStorage.setItem(
+            storageKey,
+            JSON.stringify({
+                axes: form.data.axes,
+                notes: form.data.notes,
+                recommendations: form.data.recommendations,
+                signature: form.data.signature,
+            }),
+        );
+    }, [form.data.axes, form.data.notes, form.data.recommendations, form.data.signature, readOnly, storageKey]);
+
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'الزيارات', href: '/visits' },
         { title: visit.visitable?.name ?? 'استمارة', href: `/visits/${visit.id}` },
@@ -67,7 +96,10 @@ export default function VisitShow({ visit, defaultAxes, canFinalize }: PageProps
         form.transform((data) => ({ ...data, save_status: status }));
         form.post(`/visits/${visit.id}/form`, {
             preserveScroll: true,
-            onSuccess: () => toast.success(status === 'final' ? 'تم اعتماد الاستمارة' : 'تم حفظ المسودة'),
+            onSuccess: () => {
+                if (globalThis.window !== undefined) localStorage.removeItem(storageKey);
+                toast.success(status === 'final' ? 'تم اعتماد الاستمارة' : 'تم حفظ المسودة');
+            },
         });
     };
 
@@ -87,6 +119,7 @@ export default function VisitShow({ visit, defaultAxes, canFinalize }: PageProps
                 <PageHeader
                     title="استمارة الزيارة"
                     description={`${visit.visit_type === 'teacher' ? 'معلم' : 'منسق'}: ${visit.visitable?.name ?? ''}`}
+                    backHref="/visits"
                     actions={isFinal && <Badge>معتمدة</Badge>}
                 />
 
@@ -94,7 +127,7 @@ export default function VisitShow({ visit, defaultAxes, canFinalize }: PageProps
                 <div className="bg-card grid gap-3 rounded-2xl border border-border/60 p-5 sm:grid-cols-2">
                     <Info label="المدرسة" value={visit.school?.name} />
                     <Info label="المادة" value={visit.department?.name} />
-                    <Info label="التاريخ" value={visit.visit_date} />
+                    <Info label="التاريخ" value={formatDate(visit.visit_date)} />
                     <Info label="الموجه" value={visit.supervisor?.name} />
                 </div>
 
@@ -102,25 +135,26 @@ export default function VisitShow({ visit, defaultAxes, canFinalize }: PageProps
                 <section className="bg-card space-y-3 rounded-2xl border border-border/60 p-5">
                     <h2 className="font-semibold">محاور التقييم</h2>
                     {defaultAxes.map((axis) => (
-                        <div key={axis} className="flex items-center justify-between gap-3">
+                        <div key={axis} className="flex flex-wrap items-center justify-between gap-3">
                             <span className="text-sm">{axis}</span>
-                            <Select
+                            <ToggleGroup
+                                type="single"
+                                variant="outline"
+                                size="sm"
                                 value={String(form.data.axes[axis] ?? 0)}
-                                onValueChange={(v) => form.setData('axes', { ...form.data.axes, [axis]: Number(v) })}
+                                onValueChange={(v) => {
+                                    if (v) form.setData('axes', { ...form.data.axes, [axis]: Number(v) });
+                                }}
                                 disabled={readOnly}
+                                className="justify-end gap-0"
                             >
-                                <SelectTrigger className="w-28">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="0">—</SelectItem>
-                                    {[1, 2, 3, 4, 5].map((n) => (
-                                        <SelectItem key={n} value={String(n)}>
-                                            {n}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                                <ToggleGroupItem value="0" className="px-3">—</ToggleGroupItem>
+                                {[1, 2, 3, 4, 5].map((n) => (
+                                    <ToggleGroupItem key={n} value={String(n)} className="tnum w-9">
+                                        {n}
+                                    </ToggleGroupItem>
+                                ))}
+                            </ToggleGroup>
                         </div>
                     ))}
                 </section>
@@ -195,7 +229,7 @@ export default function VisitShow({ visit, defaultAxes, canFinalize }: PageProps
 
                 {/* أزرار الحفظ */}
                 {!readOnly && (
-                    <div className="flex justify-end gap-2">
+                    <div className="flex flex-wrap justify-end gap-2">
                         <Button variant="outline" onClick={() => save('draft')} disabled={form.processing}>
                             <Save className="size-4" /> حفظ كمسودة
                         </Button>

@@ -14,7 +14,7 @@ class ImportBatch extends Model
     protected bool $usesSemester = false;
 
     protected $fillable = [
-        'academic_year_id', 'user_id', 'original_filename', 'status',
+        'academic_year_id', 'user_id', 'type', 'school_id', 'department_id', 'original_filename', 'status',
         'total_rows', 'imported_rows', 'updated_rows', 'failed_rows', 'summary',
     ];
 

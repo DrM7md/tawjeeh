@@ -1,10 +1,11 @@
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { FormDialog, FormSection } from '@/components/shared/form-dialog';
-import { DataTable } from '@/components/shared/data-table';
+import { DataTable, type DataTableFilter } from '@/components/shared/data-table';
 import { PageHeader } from '@/components/shared/page-header';
 import { usePermissions } from '@/components/shared/can';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -127,6 +128,53 @@ export default function RolesIndex({ roles, permissionGroups }: { roles: Role[];
             : []),
     ];
 
+    const filters: DataTableFilter<Role>[] = [
+        {
+            id: 'level',
+            label: 'المستوى',
+            options: Object.entries(levelLabels).map(([value, label]) => ({ value, label })),
+            getValue: (r) => r.level,
+        },
+    ];
+
+    const renderCard = (r: Role) => (
+        <Card className="flex h-full flex-col gap-3 p-4">
+            <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2">
+                    <ShieldCheck className="text-primary size-4" />
+                    <span className="font-semibold">{r.display_name}</span>
+                </div>
+                {r.is_system && <Badge variant="secondary">نظام</Badge>}
+            </div>
+            <dl className="text-muted-foreground grid grid-cols-3 gap-x-3 gap-y-1.5 text-sm">
+                <div className="flex flex-col">
+                    <dt className="text-xs">المستوى</dt>
+                    <dd className="text-foreground">{levelLabels[r.level] ?? r.level}</dd>
+                </div>
+                <div className="flex flex-col">
+                    <dt className="text-xs">الصلاحيات</dt>
+                    <dd className="text-foreground tnum">{r.permissions?.length ?? 0}</dd>
+                </div>
+                <div className="flex flex-col">
+                    <dt className="text-xs">المستخدمون</dt>
+                    <dd className="text-foreground tnum">{r.users_count ?? 0}</dd>
+                </div>
+            </dl>
+            {canManage && (
+                <div className="mt-auto flex justify-end gap-1 border-t border-border/60 pt-2">
+                    <Button variant="ghost" size="icon" onClick={() => openEdit(r)}>
+                        <Pencil className="size-4" />
+                    </Button>
+                    {!r.is_system && (
+                        <Button variant="ghost" size="icon" onClick={() => setDeleting(r)}>
+                            <Trash2 className="text-destructive size-4" />
+                        </Button>
+                    )}
+                </div>
+            )}
+        </Card>
+    );
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="الأدوار والصلاحيات" />
@@ -142,7 +190,14 @@ export default function RolesIndex({ roles, permissionGroups }: { roles: Role[];
                         )
                     }
                 />
-                <DataTable columns={columns} data={roles} searchPlaceholder="ابحث عن دور..." />
+                <DataTable
+                    columns={columns}
+                    data={roles}
+                    searchPlaceholder="ابحث عن دور..."
+                    storageKey="view:roles"
+                    filters={filters}
+                    renderCard={renderCard}
+                />
             </div>
 
             <FormDialog

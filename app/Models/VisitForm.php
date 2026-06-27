@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class VisitForm extends Model
 {
     protected $fillable = [
-        'visit_id', 'school_snapshot', 'target_snapshot', 'axes',
+        'visit_id', 'school_snapshot', 'target_snapshot', 'general_notes',
         'notes', 'recommendations', 'signature', 'save_status', 'finalized_at',
     ];
 
@@ -18,7 +18,6 @@ class VisitForm extends Model
         return [
             'school_snapshot' => 'array',
             'target_snapshot' => 'array',
-            'axes' => 'array',
             'finalized_at' => 'datetime',
         ];
     }

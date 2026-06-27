@@ -28,6 +28,7 @@ class UserRequest extends FormRequest
             'password' => [$isUpdate ? 'nullable' : 'required', 'confirmed', Password::defaults()],
             'department_id' => ['nullable', 'exists:departments,id'],
             'phone' => ['nullable', 'string', 'max:30'],
+            'gender' => ['nullable', 'in:male,female'],
             'is_active' => ['boolean'],
             'role_ids' => ['array'],
             'role_ids.*' => ['exists:roles,id'],

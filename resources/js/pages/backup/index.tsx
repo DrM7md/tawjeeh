@@ -2,6 +2,7 @@ import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/shared/data-table';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
@@ -52,6 +53,35 @@ export default function BackupIndex({ backups }: { backups: Backup[] }) {
         },
     ];
 
+    const renderCard = (b: Backup) => (
+        <Card className="flex h-full flex-col gap-3 p-4">
+            <div className="flex items-start gap-2">
+                <Database className="text-muted-foreground mt-0.5 size-4 shrink-0" />
+                <span className="font-medium break-all">{b.name}</span>
+            </div>
+            <dl className="text-muted-foreground grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm">
+                <div className="flex flex-col">
+                    <dt className="text-xs">الحجم (KB)</dt>
+                    <dd className="text-foreground tnum">{b.size}</dd>
+                </div>
+                <div className="flex flex-col">
+                    <dt className="text-xs">التاريخ</dt>
+                    <dd className="text-foreground tnum">{b.date}</dd>
+                </div>
+            </dl>
+            <div className="mt-auto flex justify-end gap-1 border-t border-border/60 pt-2">
+                <Button variant="ghost" size="icon" asChild>
+                    <a href={`/backups/${b.name}/download`}>
+                        <Download className="size-4" />
+                    </a>
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => setDeleting(b)}>
+                    <Trash2 className="text-destructive size-4" />
+                </Button>
+            </div>
+        </Card>
+    );
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="النسخ الاحتياطي" />
@@ -65,7 +95,14 @@ export default function BackupIndex({ backups }: { backups: Backup[] }) {
                         </Button>
                     }
                 />
-                <DataTable columns={columns} data={backups} searchable={false} emptyMessage="لا توجد نسخ احتياطية بعد" />
+                <DataTable
+                    columns={columns}
+                    data={backups}
+                    searchable={false}
+                    emptyMessage="لا توجد نسخ احتياطية بعد"
+                    storageKey="view:backups"
+                    renderCard={renderCard}
+                />
             </div>
 
             <ConfirmDialog

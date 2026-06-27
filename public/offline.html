@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="theme-color" content="#8D1B3D" />
+        <title>غير متصل — نظام توجيه</title>
+        <style>
+            :root {
+                color-scheme: light dark;
+            }
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                min-height: 100svh;
+                display: grid;
+                place-items: center;
+                padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+                font-family: 'Tajawal', 'Segoe UI', system-ui, -apple-system, sans-serif;
+                background: #f7f7f8;
+                color: #1c1c1e;
+                text-align: center;
+            }
+            @media (prefers-color-scheme: dark) {
+                body {
+                    background: #0f0f10;
+                    color: #f2f2f7;
+                }
+                .card {
+                    background: #1c1c1e;
+                }
+            }
+            .card {
+                background: #fff;
+                border-radius: 1.5rem;
+                padding: 2.5rem 2rem;
+                max-width: 22rem;
+                width: calc(100% - 2rem);
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            }
+            .logo {
+                width: 72px;
+                height: 72px;
+                margin: 0 auto 1.25rem;
+                border-radius: 1.1rem;
+                background: linear-gradient(160deg, #8d1b3d, #6d142f);
+                display: grid;
+                place-items: center;
+                color: #fff;
+                font-size: 2.4rem;
+                font-weight: 800;
+            }
+            h1 {
+                font-size: 1.25rem;
+                margin: 0 0 0.5rem;
+            }
+            p {
+                margin: 0 0 1.5rem;
+                font-size: 0.95rem;
+                line-height: 1.7;
+                opacity: 0.7;
+            }
+            button {
+                appearance: none;
+                border: 0;
+                cursor: pointer;
+                background: #8d1b3d;
+                color: #fff;
+                font: inherit;
+                font-weight: 700;
+                padding: 0.75rem 1.75rem;
+                border-radius: 0.9rem;
+                transition: opacity 0.2s;
+            }
+            button:active {
+                opacity: 0.8;
+            }
+        </style>
+    </head>
+    <body>
+        <main class="card">
+            <div class="logo">ت</div>
+            <h1>لا يوجد اتصال بالإنترنت</h1>
+            <p>يتعذّر الوصول إلى نظام توجيه حالياً. تحقّق من اتصالك بالشبكة ثم أعد المحاولة.</p>
+            <button type="button" onclick="location.reload()">إعادة المحاولة</button>
+        </main>
+        <script>
+            window.addEventListener('online', () => location.reload());
+        </script>
+    </body>
+</html>

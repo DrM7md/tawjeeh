@@ -5,6 +5,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { route as routeFn } from 'ziggy-js';
 import { initializeTheme } from './hooks/use-appearance';
+import { registerServiceWorker } from './lib/pwa';
 
 declare global {
     const route: typeof routeFn;
@@ -27,3 +28,6 @@ createInertiaApp({
 
 // This will set light / dark mode on load...
 initializeTheme();
+
+// تسجيل Service Worker لتفعيل خصائص PWA (الإنتاج فقط)...
+registerServiceWorker();

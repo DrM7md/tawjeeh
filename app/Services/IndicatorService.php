@@ -61,7 +61,7 @@ class IndicatorService
                 'departments' => $departments->count(),
                 'schools' => School::where('is_active', true)->count(),
                 'supervisors' => User::whereHas('roles', fn ($q) => $q->where('name', Permissions::ROLE_SUPERVISOR))->count(),
-                'teachers' => Teacher::count(),
+                'teachers' => Teacher::where('is_active', true)->count(),
                 'coordinators' => Coordinator::count(),
                 'completion' => $overall['completion'],
                 'visits_done' => Visit::count(),
@@ -89,7 +89,7 @@ class IndicatorService
             'department' => Department::find($departmentId)?->name,
             'cards' => [
                 'schools' => $assignedSchoolIds->count(),
-                'teachers' => Teacher::where('department_id', $departmentId)->count(),
+                'teachers' => Teacher::where('department_id', $departmentId)->where('is_active', true)->count(),
                 'coordinators' => Coordinator::where('department_id', $departmentId)->count(),
                 'completion' => $stats['completion'],
                 'visits_done' => $stats['done'],
@@ -127,21 +127,47 @@ class IndicatorService
         ];
     }
 
-    /** مقارنة الموجهين: عدد الزيارات المنجزة (الفصل المختار) + المدارس المسندة. */
+    /**
+     * مقارنة الموجهين: نسبة إنجاز الزيارات + نسبة إنجاز التحكيم لكل موجّه،
+     * مرتّبة تنازليًا (الأكثر تقدّمًا أولًا) لإبراز المتعثّرين في الأسفل.
+     */
     private function supervisorComparison(?int $departmentId = null): array
     {
-        $query = User::whereHas('roles', fn ($q) => $q->where('name', Permissions::ROLE_SUPERVISOR));
+        $query = User::with('roles')->whereHas('roles', fn ($q) => $q->where('name', Permissions::ROLE_SUPERVISOR));
         if ($departmentId) {
             $query->where('department_id', $departmentId);
         }
 
-        return $query->orderBy('name')->get(['id', 'name'])->map(function ($s) use ($departmentId) {
-            $visits = Visit::where('supervisor_id', $s->id)->count();
-            $assignments = SchoolAssignment::where('supervisor_id', $s->id)
-                ->when($departmentId, fn ($q) => $q->where('department_id', $departmentId))
-                ->count();
+        return $query->orderBy('name')->get()->map(function ($s) use ($departmentId) {
+            // الزيارات: followUp يقصر النطاق على مدارس الموجّه ويعيد نسبة الإنجاز.
+            $v = $this->visits->followUp($s)['stats'];
 
-            return ['supervisor' => $s->name, 'visits' => $visits, 'schools' => $assignments];
-        })->all();
+            // التحكيم: كل مدرسة مكلّف بها عليها 4 اختبارات (exam_period).
+            $assignedSchoolIds = SchoolAssignment::where('supervisor_id', $s->id)
+                ->when($departmentId, fn ($q) => $q->where('department_id', $departmentId))
+                ->pluck('school_id')->unique();
+
+            $reviewsTotal = $assignedSchoolIds->count() * 4;
+            $reviewsDone = TestReview::where('supervisor_id', $s->id)
+                ->whereIn('school_id', $assignedSchoolIds)
+                ->where('status', 'final')
+                ->whereNotNull('exam_period')
+                ->get(['school_id', 'exam_period'])
+                ->unique(fn ($r) => $r->school_id.'-'.$r->exam_period)
+                ->count();
+            $reviewsPct = $reviewsTotal ? round($reviewsDone / $reviewsTotal * 100, 1) : 0;
+
+            return [
+                'supervisor' => $s->name,
+                'schools' => $assignedSchoolIds->count(),
+                'visits_pct' => $v['completion'],
+                'visits_done' => $v['done'],
+                'visits_total' => $v['total'],
+                'reviews_pct' => $reviewsPct,
+                'reviews_done' => $reviewsDone,
+                'reviews_total' => $reviewsTotal,
+                'overall' => round(($v['completion'] + $reviewsPct) / 2, 1),
+            ];
+        })->sortByDesc('overall')->values()->all();
     }
 }

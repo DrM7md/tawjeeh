@@ -6,26 +6,19 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatDate } from '@/lib/utils';
 import AppLayout from '@/layouts/app-layout';
 import { type AcademicYear, type BreadcrumbItem, type Semester } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
-import { Archive, CheckCircle2, Lock, Pencil, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { CheckCircle2, Pencil, Plus, Trash2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'لوحة التحكم', href: '/dashboard' },
     { title: 'الأعوام الدراسية', href: '/academic' },
 ];
-
-const yearStatusBadge: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' }> = {
-    active: { label: 'نشط', variant: 'default' },
-    closed: { label: 'مغلق', variant: 'secondary' },
-    archived: { label: 'أرشيف', variant: 'destructive' },
-};
-
-const semStatus: Record<string, string> = { not_started: 'لم يبدأ', active: 'نشط', ended: 'منتهٍ', closed: 'مغلق' };
 
 export default function AcademicIndex({ years }: { years: AcademicYear[] }) {
     const { can } = usePermissions();
@@ -37,6 +30,14 @@ export default function AcademicIndex({ years }: { years: AcademicYear[] }) {
     const [editingSem, setEditingSem] = useState<Semester | null>(null);
     const [semYearId, setSemYearId] = useState<number | null>(null);
     const [confirm, setConfirm] = useState<{ url: string; title: string; desc: string; destructive?: boolean } | null>(null);
+    const [tab, setTab] = useState<'active' | 'inactive' | 'all'>('all');
+
+    const activeCount = useMemo(() => years.filter((y) => y.is_active).length, [years]);
+    const filteredYears = useMemo(() => {
+        if (tab === 'active') return years.filter((y) => y.is_active);
+        if (tab === 'inactive') return years.filter((y) => !y.is_active);
+        return years;
+    }, [years, tab]);
 
     const yearForm = useForm({ name: '', start_date: '', end_date: '', generate_semesters: true });
     const semForm = useForm({ academic_year_id: 0, name: '', start_date: '', end_date: '' });
@@ -94,17 +95,28 @@ export default function AcademicIndex({ years }: { years: AcademicYear[] }) {
                     actions={canManage && <Button onClick={openCreateYear}><Plus className="size-4" /> عام جديد</Button>}
                 />
 
+                <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
+                    <TabsList>
+                        <TabsTrigger value="active">فعّال ({activeCount})</TabsTrigger>
+                        <TabsTrigger value="inactive">غير فعّال ({years.length - activeCount})</TabsTrigger>
+                        <TabsTrigger value="all">الكل ({years.length})</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+
+                {filteredYears.length === 0 ? (
+                    <div className="bg-card text-muted-foreground rounded-2xl border border-border/60 p-8 text-center text-sm">
+                        لا توجد أعوام في هذا التصنيف
+                    </div>
+                ) : (
                 <div className="grid gap-4 lg:grid-cols-2">
-                    {years.map((y) => {
-                        const badge = yearStatusBadge[y.status] ?? yearStatusBadge.active;
+                    {filteredYears.map((y) => {
                         return (
                             <div key={y.id} className="bg-card space-y-4 rounded-2xl border border-border/60 p-5">
                                 <div className="flex items-start justify-between gap-2">
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-2">
                                             <h3 className="text-lg font-bold">{y.name}</h3>
-                                            <Badge variant={badge.variant}>{badge.label}</Badge>
-                                            {y.is_active && <Badge>فعّال</Badge>}
+                                            <Badge variant={y.is_active ? 'default' : 'secondary'}>{y.is_active ? 'فعّال' : 'غير فعّال'}</Badge>
                                         </div>
                                         {y.start_date && (
                                             <p className="text-muted-foreground text-xs tnum">
@@ -120,16 +132,6 @@ export default function AcademicIndex({ years }: { years: AcademicYear[] }) {
                                                 </Button>
                                             )}
                                             <Button variant="ghost" size="icon" onClick={() => openEditYear(y)}><Pencil className="size-4" /></Button>
-                                            {y.status === 'active' && (
-                                                <Button variant="ghost" size="icon" title="إغلاق" onClick={() => action(`/academic-years/${y.id}/close`, 'تم الإغلاق')}>
-                                                    <Lock className="size-4" />
-                                                </Button>
-                                            )}
-                                            {y.status !== 'archived' && (
-                                                <Button variant="ghost" size="icon" title="أرشفة" onClick={() => action(`/academic-years/${y.id}/archive`, 'تمت الأرشفة')}>
-                                                    <Archive className="size-4" />
-                                                </Button>
-                                            )}
                                             {!y.is_active && (
                                                 <Button
                                                     variant="ghost"
@@ -159,21 +161,16 @@ export default function AcademicIndex({ years }: { years: AcademicYear[] }) {
                                                 <div key={s.id} className="flex items-center justify-between gap-2 p-3">
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-sm font-medium">{s.name}</span>
-                                                        {s.is_active ? <Badge>نشط</Badge> : <Badge variant="secondary">{semStatus[s.status]}</Badge>}
+                                                        <Badge variant={s.is_active ? 'default' : 'secondary'}>{s.is_active ? 'فعّال' : 'غير فعّال'}</Badge>
                                                     </div>
                                                     {canManage && (
-                                                        <div className="flex gap-1">
+                                                        <div className="flex flex-wrap justify-end gap-1">
                                                             {!s.is_active && (
                                                                 <Button variant="outline" size="sm" onClick={() => action(`/semesters/${s.id}/activate`, 'تم التفعيل')}>
                                                                     تفعيل
                                                                 </Button>
                                                             )}
                                                             <Button variant="ghost" size="icon" onClick={() => openEditSem(s)}><Pencil className="size-3.5" /></Button>
-                                                            {s.status === 'active' && (
-                                                                <Button variant="ghost" size="icon" title="إغلاق" onClick={() => action(`/semesters/${s.id}/close`, 'تم الإغلاق')}>
-                                                                    <Lock className="size-3.5" />
-                                                                </Button>
-                                                            )}
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
@@ -194,12 +191,13 @@ export default function AcademicIndex({ years }: { years: AcademicYear[] }) {
                         );
                     })}
                 </div>
+                )}
             </div>
 
             {/* نافذة العام */}
             <FormDialog open={yearDialog} onOpenChange={setYearDialog} title={editingYear ? 'تعديل عام' : 'عام دراسي جديد'} onSubmit={submitYear} loading={yearForm.processing}>
                 <FormSection>
-                    <div className="space-y-2">
+                    <div className="space-y-2 sm:col-span-2">
                         <Label htmlFor="y_name">اسم العام</Label>
                         <Input id="y_name" placeholder="2027–2028" value={yearForm.data.name} onChange={(e) => yearForm.setData('name', e.target.value)} />
                         {yearForm.errors.name && <p className="text-destructive text-xs">{yearForm.errors.name}</p>}

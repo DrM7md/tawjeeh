@@ -10,7 +10,7 @@ class AcademicYear extends Model
 {
     use Auditable;
 
-    protected $fillable = ['name', 'start_date', 'end_date', 'is_active', 'status', 'created_by'];
+    protected $fillable = ['name', 'start_date', 'end_date', 'is_active', 'created_by'];
 
     protected function casts(): array
     {
@@ -33,6 +33,6 @@ class AcademicYear extends Model
 
     public function isEditable(): bool
     {
-        return $this->status === 'active';
+        return $this->is_active;
     }
 }

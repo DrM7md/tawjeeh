@@ -3,18 +3,31 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Support\Permissions;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Hash;
 
 class UserService
 {
-    /** @return Collection<int, User> */
-    public function list(): Collection
+    /**
+     * قائمة المستخدمين مع حصر النطاق:
+     * رئيس التوجيه/المساعد يرى الجميع، وغيرهم (رئيس القسم) يرى مستخدمي قسمه فقط.
+     *
+     * @return Collection<int, User>
+     */
+    public function list(User $viewer): Collection
     {
         return User::query()
             ->with(['department:id,name', 'roles:id,name,display_name,level'])
+            ->when(! $this->canViewAll($viewer), fn ($q) => $q->where('department_id', $viewer->department_id))
             ->orderBy('name')
             ->get();
+    }
+
+    /** هل يملك المُشاهد رؤية كل الأقسام (رئيس توجيه أو مساعده)؟ */
+    public function canViewAll(User $viewer): bool
+    {
+        return $viewer->isSuper() || $viewer->hasRole(Permissions::ROLE_ASSISTANT);
     }
 
     public function create(array $data): User

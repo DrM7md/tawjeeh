@@ -1,0 +1,50 @@
+{
+    "name": "نظام توجيه — منصة إدارة التوجيه التربوي",
+    "short_name": "توجيه",
+    "description": "منصة إدارة التوجيه التربوي: الزيارات والمتابعة، تحكيم الاختبارات، الهيكل التنظيمي والتقارير.",
+    "id": "/",
+    "start_url": "/dashboard",
+    "scope": "/",
+    "display": "standalone",
+    "display_override": ["standalone", "minimal-ui"],
+    "orientation": "portrait-primary",
+    "dir": "rtl",
+    "lang": "ar",
+    "background_color": "#ffffff",
+    "theme_color": "#8D1B3D",
+    "categories": ["education", "productivity", "business"],
+    "icons": [
+        {
+            "src": "/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "الزيارات والمتابعة",
+            "short_name": "الزيارات",
+            "url": "/visits",
+            "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "تحكيم الاختبارات",
+            "short_name": "التحكيم",
+            "url": "/reviews",
+            "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+        }
+    ]
+}

@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class AcademicYearRequest extends FormRequest
 {
@@ -18,7 +17,6 @@ class AcademicYearRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'start_date' => ['nullable', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
-            'status' => ['nullable', Rule::in(['active', 'closed', 'archived'])],
             'generate_semesters' => ['boolean'],
         ];
     }

@@ -1,12 +1,25 @@
-import { StatCard } from '@/components/stat-card';
 import { PageHeader } from '@/components/shared/page-header';
+import { BarCard, ChartCard, GaugeCard, PALETTE, PieCard } from '@/components/shared/stat-charts';
+import { StatCard } from '@/components/stat-card';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import { Award, Building2, CheckCircle2, ClipboardCheck, GraduationCap, Network, School, Users } from 'lucide-react';
-import { Bar, BarChart, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'لوحة التحكم', href: '/dashboard' }];
+
+interface SupervisorRow {
+    supervisor: string;
+    schools: number;
+    visits_pct: number;
+    visits_done: number;
+    visits_total: number;
+    reviews_pct: number;
+    reviews_done: number;
+    reviews_total: number;
+    overall: number;
+}
 
 interface Cards {
     departments?: number;
@@ -25,17 +38,40 @@ interface Dashboard {
     department?: string;
     cards: Cards;
     departmentPerformance?: { department: string; completion: number; done: number; remaining: number; reviews: number }[];
-    supervisorComparison?: { supervisor: string; visits: number; schools: number }[];
+    supervisorComparison?: SupervisorRow[];
     statusDistribution: { name: string; value: number }[];
 }
 
-const PIE_COLORS = ['#34C759', '#FF9F0A', '#FF3B30'];
-const PRIMARY = '#8D1B3D';
-const INFO = '#3B82F6';
+const STATUS_COLORS = ['#22C55E', '#FF9F0A', '#FF3B30'];
+
+function SupervisorTooltip({ active, payload }: { active?: boolean; payload?: { payload: SupervisorRow }[] }) {
+    if (!active || !payload?.length) return null;
+    const d = payload[0].payload;
+    const overallColor = d.overall >= 80 ? '#22C55E' : d.overall >= 50 ? '#FF9F0A' : '#FF3B30';
+    return (
+        <div className="border-border bg-background rounded-xl border p-3 text-xs shadow-md">
+            <div className="mb-1.5 font-semibold">{d.supervisor}</div>
+            <div className="text-muted-foreground mb-1">المدارس المسندة: {d.schools}</div>
+            <div style={{ color: PALETTE[0] }}>
+                الزيارات: {d.visits_pct}% ({d.visits_done}/{d.visits_total})
+            </div>
+            <div style={{ color: PALETTE[1] }}>
+                التحكيم: {d.reviews_pct}% ({d.reviews_done}/{d.reviews_total})
+            </div>
+            <div className="mt-1.5 font-medium" style={{ color: overallColor }}>
+                الإجمالي: {d.overall}%
+            </div>
+        </div>
+    );
+}
 
 export default function Dashboard({ dashboard }: { dashboard: Dashboard }) {
     const c = dashboard.cards;
+    const completion = c.completion ?? 0;
+    const completionColor = completion >= 80 ? '#22C55E' : completion >= 50 ? '#FF9F0A' : '#FF3B30';
     const hasStatus = dashboard.statusDistribution.some((s) => s.value > 0);
+
+    const deptData = (dashboard.departmentPerformance ?? []).map((d) => ({ name: d.department, value: d.completion }));
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -54,7 +90,7 @@ export default function Dashboard({ dashboard }: { dashboard: Dashboard }) {
 
                 {/* البطاقات الإحصائية */}
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <StatCard title="نسبة الإنجاز" value={`${c.completion ?? 0}%`} icon={CheckCircle2} tone={(c.completion ?? 0) >= 80 ? 'success' : (c.completion ?? 0) >= 50 ? 'warning' : 'destructive'} />
+                    <StatCard title="نسبة الإنجاز" value={`${completion}%`} icon={CheckCircle2} tone={completion >= 80 ? 'success' : completion >= 50 ? 'warning' : 'destructive'} />
                     {dashboard.scope === 'global' && <StatCard title="الأقسام" value={c.departments ?? 0} icon={Building2} tone="primary" />}
                     <StatCard title="المدارس" value={c.schools ?? 0} icon={School} tone="info" />
                     {c.supervisors !== undefined && <StatCard title="الموجهون" value={c.supervisors} icon={Users} tone="primary" />}
@@ -66,64 +102,59 @@ export default function Dashboard({ dashboard }: { dashboard: Dashboard }) {
                     )}
                 </div>
 
+                {/* عدّاد الإنجاز + توزيع الحالات */}
                 <div className="grid gap-6 lg:grid-cols-2">
-                    {/* أداء الأقسام */}
-                    {dashboard.departmentPerformance && dashboard.departmentPerformance.length > 0 && (
-                        <ChartCard title="نسبة إنجاز الأقسام">
-                            <ResponsiveContainer width="100%" height={280}>
-                                <BarChart data={dashboard.departmentPerformance} layout="vertical" margin={{ right: 16 }}>
-                                    <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} />
-                                    <YAxis type="category" dataKey="department" width={110} tick={{ fontSize: 11 }} />
-                                    <Tooltip formatter={(v: number) => `${v}%`} />
-                                    <Bar dataKey="completion" fill={PRIMARY} radius={[0, 6, 6, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </ChartCard>
-                    )}
+                    <GaugeCard
+                        title="نسبة الإنجاز العامة"
+                        hint="نسبة الزيارات المنجزة من إجمالي المستهدف"
+                        items={[{ pct: completion, color: completionColor, label: 'الإنجاز', sub: `${c.visits_done ?? 0} زيارة` }]}
+                    />
 
-                    {/* مقارنة الموجهين */}
-                    {dashboard.supervisorComparison && dashboard.supervisorComparison.length > 0 && (
-                        <ChartCard title="مقارنة الموجهين (الزيارات)">
-                            <ResponsiveContainer width="100%" height={280}>
-                                <BarChart data={dashboard.supervisorComparison} margin={{ top: 8 }}>
-                                    <XAxis dataKey="supervisor" tick={{ fontSize: 11 }} />
-                                    <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                                    <Tooltip />
-                                    <Legend />
-                                    <Bar dataKey="visits" name="زيارات" fill={PRIMARY} radius={[6, 6, 0, 0]} />
-                                    <Bar dataKey="schools" name="مدارس" fill={INFO} radius={[6, 6, 0, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </ChartCard>
-                    )}
-
-                    {/* توزيع حالات الإنجاز */}
-                    {hasStatus && (
+                    {hasStatus ? (
+                        <PieCard title="توزيع حالات الزيارات" hint="تمت / متبقٍ / متأخر" data={dashboard.statusDistribution} colors={STATUS_COLORS} centerLabel="مستهدف" />
+                    ) : (
                         <ChartCard title="توزيع حالات الزيارات">
-                            <ResponsiveContainer width="100%" height={280}>
-                                <PieChart>
-                                    <Pie data={dashboard.statusDistribution} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label>
-                                        {dashboard.statusDistribution.map((_, i) => (
-                                            <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip />
-                                    <Legend />
-                                </PieChart>
-                            </ResponsiveContainer>
+                            <div className="text-muted-foreground flex h-[300px] items-center justify-center text-sm">لا توجد بيانات بعد</div>
                         </ChartCard>
                     )}
                 </div>
+
+                {/* أداء الأقسام (للنطاق العام) */}
+                {deptData.length > 0 && (
+                    <BarCard title="نسبة إنجاز الأقسام" hint="نسبة الزيارات المنجزة لكل قسم" data={deptData} horizontal color={PALETTE[0]} unit="%" height={Math.max(260, deptData.length * 46)} />
+                )}
+
+                {/* متابعة الموجهين: نسبة إنجاز الزيارات والتحكيم، مرتّبة من الأكثر تقدّمًا */}
+                {dashboard.supervisorComparison && dashboard.supervisorComparison.length > 0 && (
+                    <ChartCard
+                        title="متابعة الموجّهين"
+                        hint="نسبة إنجاز الزيارات والتحكيم لكل موجّه — مرتّبون من الأكثر تقدّمًا إلى الأكثر تعثّرًا"
+                        accent={PALETTE[1]}
+                    >
+                        <ResponsiveContainer width="100%" height={Math.max(300, dashboard.supervisorComparison.length * 56)}>
+                            <BarChart data={dashboard.supervisorComparison} layout="vertical" margin={{ left: 8, right: 24 }} barCategoryGap="24%">
+                                <defs>
+                                    <linearGradient id="sup-visits" x1="0" y1="0" x2="1" y2="0">
+                                        <stop offset="0%" stopColor="#C97A92" />
+                                        <stop offset="100%" stopColor={PALETTE[0]} />
+                                    </linearGradient>
+                                    <linearGradient id="sup-reviews" x1="0" y1="0" x2="1" y2="0">
+                                        <stop offset="0%" stopColor="#A9CBF5" />
+                                        <stop offset="100%" stopColor={PALETTE[1]} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid horizontal={false} strokeDasharray="3 3" stroke="currentColor" className="text-border/40" />
+                                <XAxis type="number" domain={[0, 100]} unit="%" tick={{ fontSize: 11 }} allowDecimals={false} axisLine={false} tickLine={false} />
+                                <YAxis type="category" dataKey="supervisor" width={120} tick={{ fontSize: 11 }} interval={0} axisLine={false} tickLine={false} />
+                                <Tooltip content={<SupervisorTooltip />} cursor={{ fill: 'currentColor', className: 'text-muted/40' }} />
+                                <Legend iconType="circle" wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+                                <Bar dataKey="visits_pct" name="الزيارات" fill="url(#sup-visits)" radius={[0, 6, 6, 0]} maxBarSize={18} animationDuration={900} />
+                                <Bar dataKey="reviews_pct" name="التحكيم" fill="url(#sup-reviews)" radius={[0, 6, 6, 0]} maxBarSize={18} animationDuration={900} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </ChartCard>
+                )}
             </div>
         </AppLayout>
-    );
-}
-
-function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
-    return (
-        <div className="bg-card rounded-2xl border border-border/60 p-5">
-            <h2 className="mb-4 text-lg font-semibold">{title}</h2>
-            {children}
-        </div>
     );
 }

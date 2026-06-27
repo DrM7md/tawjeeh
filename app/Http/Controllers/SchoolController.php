@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SchoolRequest;
 use App\Models\School;
 use App\Models\Stage;
+use App\Services\SchoolPagePresenter;
 use App\Services\SchoolService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -20,6 +22,11 @@ class SchoolController extends Controller
             'schools' => $this->service->list(),
             'stages' => Stage::orderBy('sort_order')->get(['id', 'name']),
         ]);
+    }
+
+    public function show(School $school, Request $request, SchoolPagePresenter $presenter): Response
+    {
+        return Inertia::render('organization/schools/show', $presenter->props($school, $request->user()));
     }
 
     public function store(SchoolRequest $request): RedirectResponse

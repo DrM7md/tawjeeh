@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Notifications\NotificationPresenter;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -59,6 +60,12 @@ class HandleInertiaRequests extends Middleware
             ],
             // السياق الأكاديمي (العام/الفصل المختار) — متاح للمستخدمين المصادَقين فقط.
             'context' => $user ? app(\App\Support\ActiveContext::class)->share() : null,
+            // الإشعارات: العدد غير المقروء + آخر 10 — يُقيَّم بكسل عند الطلب (initial + partial reload).
+            'notifications' => $user ? fn () => [
+                'unread_count' => $user->unreadNotifications()->count(),
+                'items' => $user->notifications()->latest()->limit(10)->get()
+                    ->map(fn ($n) => NotificationPresenter::make($n))->all(),
+            ] : null,
         ]);
     }
 }

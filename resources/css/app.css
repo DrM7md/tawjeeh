@@ -121,15 +121,15 @@
     --chart-4: hsl(212, 80%, 55%);
     --chart-5: hsl(135, 59%, 49%);
 
-    /* الشريط الجانبي داكن دائمًا — #1D1D1F */
-    --sidebar-background: hsl(240, 6%, 10%);
-    --sidebar-foreground: hsl(240, 3%, 82%); /* #D1D1D3 */
-    --sidebar-primary: hsl(342, 68%, 45%);
+    /* الشريط الجانبي عنابي دائمًا — هوية رسمية */
+    --sidebar-background: hsl(342, 64%, 21%); /* عنابي غامق #5E1228 */
+    --sidebar-foreground: hsl(342, 30%, 87%); /* وردي فاتح للنصوص */
+    --sidebar-primary: hsl(342, 62%, 44%); /* لمسة أفتح لأيقونة الشعار */
     --sidebar-primary-foreground: hsl(0, 0%, 100%);
-    --sidebar-accent: hsl(240, 5%, 16%);
+    --sidebar-accent: hsl(342, 50%, 30%); /* تمييز التمرير/النشط */
     --sidebar-accent-foreground: hsl(0, 0%, 100%);
-    --sidebar-border: hsl(240, 5%, 18%);
-    --sidebar-ring: hsl(342, 68%, 45%);
+    --sidebar-border: hsl(342, 42%, 29%);
+    --sidebar-ring: hsl(342, 60%, 52%);
 }
 
 /* ============== الوضع الداكن ============== */
@@ -174,15 +174,15 @@
     --chart-4: hsl(212, 70%, 60%);
     --chart-5: hsl(135, 55%, 55%);
 
-    /* الشريط الجانبي يبقى داكنًا */
-    --sidebar-background: hsl(240, 6%, 8%);
-    --sidebar-foreground: hsl(240, 3%, 82%);
-    --sidebar-primary: hsl(342, 62%, 55%);
+    /* الشريط الجانبي يبقى عنابيًا في الوضع الداكن */
+    --sidebar-background: hsl(342, 58%, 15%); /* عنابي أعمق للوضع الداكن */
+    --sidebar-foreground: hsl(342, 26%, 84%);
+    --sidebar-primary: hsl(342, 62%, 50%);
     --sidebar-primary-foreground: hsl(0, 0%, 100%);
-    --sidebar-accent: hsl(240, 5%, 16%);
+    --sidebar-accent: hsl(342, 46%, 24%);
     --sidebar-accent-foreground: hsl(0, 0%, 100%);
-    --sidebar-border: hsl(240, 5%, 16%);
-    --sidebar-ring: hsl(342, 62%, 55%);
+    --sidebar-border: hsl(342, 40%, 23%);
+    --sidebar-ring: hsl(342, 60%, 55%);
 }
 
 @layer base {
@@ -197,6 +197,20 @@
     body {
         @apply bg-background text-foreground;
         font-feature-settings: 'kern';
+    }
+
+    /* ===== المناطق الآمنة للجوال (النوتش/الحواف) في وضع التطبيق المثبّت (PWA) ===== */
+    @supports (padding: max(0px)) {
+        /* الترويسة تُزاح أسفل شريط الحالة/النوتش */
+        header[data-app-header] {
+            padding-top: env(safe-area-inset-top);
+        }
+
+        /* احترام حواف الشاشة الأفقية (الوضع الأفقي) والسفلية */
+        body {
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
     }
 
     /* أرقام لاتينية مصطفّة للأعمدة الرقمية */

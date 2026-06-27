@@ -14,7 +14,6 @@ return new class extends Migration
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->boolean('is_active')->default(false)->index(); // واحد فقط = true (AY-1)
-            $table->enum('status', ['active', 'closed', 'archived'])->default('active');
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });

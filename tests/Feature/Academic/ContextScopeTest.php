@@ -51,8 +51,8 @@ class ContextScopeTest extends TestCase
 
     public function test_global_scope_filters_by_selected_year(): void
     {
-        $year2 = AcademicYear::create(['name' => '2024–2025', 'status' => 'closed', 'is_active' => false]);
-        $sem2 = Semester::create(['academic_year_id' => $year2->id, 'name' => 'الفصل الأول', 'is_active' => true, 'status' => 'active']);
+        $year2 = AcademicYear::create(['name' => '2024–2025', 'is_active' => false]);
+        $sem2 = Semester::create(['academic_year_id' => $year2->id, 'name' => 'الفصل الأول', 'is_active' => true]);
 
         // بند في العام النشط (افتراضي)
         ContextItem::create(['title' => 'حالي']);

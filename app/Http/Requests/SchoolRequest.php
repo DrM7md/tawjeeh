@@ -19,7 +19,9 @@ class SchoolRequest extends FormRequest
             'stage_id' => ['nullable', 'exists:stages,id'],
             'gender' => ['nullable', Rule::in(['boys', 'girls', 'mixed'])],
             'zone' => ['nullable', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
             'address' => ['nullable', 'string', 'max:255'],
+            'principal' => ['nullable', 'string', 'max:255'],
             'is_active' => ['boolean'],
         ];
     }

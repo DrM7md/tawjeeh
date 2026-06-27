@@ -48,20 +48,6 @@ class AcademicYearController extends Controller
         return back()->with('success', "تم تفعيل العام «{$academicYear->name}»");
     }
 
-    public function close(AcademicYear $academicYear): RedirectResponse
-    {
-        $this->service->close($academicYear);
-
-        return back()->with('success', 'تم إغلاق العام');
-    }
-
-    public function archive(AcademicYear $academicYear): RedirectResponse
-    {
-        $this->service->archive($academicYear);
-
-        return back()->with('success', 'تمت أرشفة العام');
-    }
-
     public function destroy(AcademicYear $academicYear): RedirectResponse
     {
         if ($academicYear->is_active) {

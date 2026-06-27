@@ -1,10 +1,11 @@
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { FormDialog, FormSection } from '@/components/shared/form-dialog';
-import { DataTable } from '@/components/shared/data-table';
+import { DataTable, type DataTableFilter } from '@/components/shared/data-table';
 import { PageHeader } from '@/components/shared/page-header';
 import { usePermissions } from '@/components/shared/can';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -112,6 +113,47 @@ export default function DepartmentsIndex({ departments, users }: PageProps) {
             : []),
     ];
 
+    const filters: DataTableFilter<Department>[] = [
+        {
+            id: 'status',
+            label: 'الحالة',
+            options: [
+                { value: 'active', label: 'نشط' },
+                { value: 'inactive', label: 'معطّل' },
+            ],
+            getValue: (d) => (d.is_active ? 'active' : 'inactive'),
+        },
+    ];
+
+    const renderCard = (d: Department) => (
+        <Card className="flex h-full flex-col gap-3 p-4">
+            <div className="flex items-start justify-between gap-2">
+                <span className="font-semibold">{d.name}</span>
+                {d.is_active ? <Badge>نشط</Badge> : <Badge variant="secondary">معطّل</Badge>}
+            </div>
+            <dl className="text-muted-foreground grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm">
+                <div className="flex flex-col">
+                    <dt className="text-xs">رئيس القسم</dt>
+                    <dd className="text-foreground">{d.head?.name ?? '—'}</dd>
+                </div>
+                <div className="flex flex-col">
+                    <dt className="text-xs">الموجهون</dt>
+                    <dd className="text-foreground tnum">{d.users_count ?? 0}</dd>
+                </div>
+            </dl>
+            {canManage && (
+                <div className="mt-auto flex justify-end gap-1 border-t border-border/60 pt-2">
+                    <Button variant="ghost" size="icon" onClick={() => openEdit(d)}>
+                        <Pencil className="size-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => setDeleting(d)}>
+                        <Trash2 className="text-destructive size-4" />
+                    </Button>
+                </div>
+            )}
+        </Card>
+    );
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="الأقسام" />
@@ -128,7 +170,14 @@ export default function DepartmentsIndex({ departments, users }: PageProps) {
                     }
                 />
 
-                <DataTable columns={columns} data={departments} searchPlaceholder="ابحث عن قسم..." />
+                <DataTable
+                    columns={columns}
+                    data={departments}
+                    searchPlaceholder="ابحث عن قسم..."
+                    storageKey="view:departments"
+                    filters={filters}
+                    renderCard={renderCard}
+                />
             </div>
 
             <FormDialog

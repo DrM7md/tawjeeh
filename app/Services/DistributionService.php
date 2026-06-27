@@ -37,6 +37,45 @@ class DistributionService
         return Department::where('id', $user->department_id)->get(['id', 'name']);
     }
 
+    /**
+     * بطاقات الأقسام للمستوى الأعلى: لكل قسم تغطية توزيع مدارسه + عدد موجّهيه.
+     * تُسقَط على شكل إحصاءات البطاقة المشتركة (total=المدارس، done=المُسندة، completion=نسبة التوزيع).
+     *
+     * @return list<array<string,mixed>>
+     */
+    public function departmentBoards(): array
+    {
+        $departments = Department::orderBy('name')->get(['id', 'name']);
+        $schoolsTotal = School::where('is_active', true)->count();
+
+        $assignedByDept = SchoolAssignment::query()
+            ->selectRaw('department_id, COUNT(DISTINCT school_id) as c')
+            ->groupBy('department_id')
+            ->pluck('c', 'department_id');
+
+        $supervisorsByDept = User::where('is_active', true)
+            ->whereHas('roles', fn ($q) => $q->where('name', Permissions::ROLE_SUPERVISOR))
+            ->selectRaw('department_id, COUNT(*) as c')
+            ->groupBy('department_id')
+            ->pluck('c', 'department_id');
+
+        return $departments->map(function ($d) use ($schoolsTotal, $assignedByDept, $supervisorsByDept) {
+            $assigned = (int) ($assignedByDept[$d->id] ?? 0);
+            $remaining = max(0, $schoolsTotal - $assigned);
+
+            return [
+                'id' => $d->id,
+                'name' => $d->name,
+                'supervisors' => (int) ($supervisorsByDept[$d->id] ?? 0),
+                'total' => $schoolsTotal,
+                'done' => $assigned,
+                'remaining' => $remaining,
+                'late' => 0,
+                'completion' => $schoolsTotal ? round($assigned / $schoolsTotal * 100, 1) : 0,
+            ];
+        })->all();
+    }
+
     /** نظرة شاملة على توزيع قسم: الموجهون + أحمالهم + المدارس + العدالة. */
     public function overview(int $departmentId): array
     {
@@ -48,15 +87,15 @@ class DistributionService
         $supervisors = User::where('department_id', $departmentId)
             ->whereHas('roles', fn ($q) => $q->where('name', Permissions::ROLE_SUPERVISOR))
             ->orderBy('name')
-            ->get(['id', 'name']);
+            ->get(['id', 'name', 'gender']);
 
-        $schools = School::where('is_active', true)->orderBy('name')->get(['id', 'name', 'stage_id']);
+        $schools = School::where('is_active', true)->orderBy('name')->get(['id', 'name', 'stage_id', 'gender']);
 
         // بناء الحمل لكل موجه
         $bySupervisor = [];
         foreach ($supervisors as $s) {
             $bySupervisor[$s->id] = [
-                'id' => $s->id, 'name' => $s->name,
+                'id' => $s->id, 'name' => $s->name, 'gender' => $s->gender,
                 'schools' => [], 'schools_count' => 0, 'teachers' => 0, 'coordinators' => 0, 'weight' => 0.0,
             ];
         }
@@ -64,7 +103,7 @@ class DistributionService
         $unassigned = [];
         foreach ($schools as $school) {
             $m = $metrics[$school->id] ?? ['teachers' => 0, 'coordinators' => 0, 'weight' => self::BASE];
-            $row = ['id' => $school->id, 'name' => $school->name, ...$m];
+            $row = ['id' => $school->id, 'name' => $school->name, 'gender' => $school->gender, ...$m];
 
             $assignment = $assignments[$school->id] ?? null;
             if ($assignment && isset($bySupervisor[$assignment->supervisor_id])) {
@@ -100,22 +139,28 @@ class DistributionService
         $metrics = $this->schoolMetrics($departmentId);
         $supervisors = User::where('department_id', $departmentId)
             ->whereHas('roles', fn ($q) => $q->where('name', Permissions::ROLE_SUPERVISOR))
-            ->pluck('id')->all();
+            ->get(['id', 'gender']);
 
-        if (empty($supervisors)) {
+        if ($supervisors->isEmpty()) {
             return ['assignments' => [], 'error' => 'لا يوجد موجّهون في هذا القسم'];
         }
 
+        // الموجِّهون حسب النوع — الموجِّهات لمدارس البنات، والموجِّهون لمدارس البنين
+        $maleSupervisors = $supervisors->where('gender', 'male')->pluck('id')->all();
+        $femaleSupervisors = $supervisors->where('gender', 'female')->pluck('id')->all();
+        $allSupervisors = $supervisors->pluck('id')->all();
+
         $existing = SchoolAssignment::where('department_id', $departmentId)->pluck('supervisor_id', 'school_id');
-        $allSchoolIds = School::where('is_active', true)->pluck('id')->all();
+        $schools = School::where('is_active', true)->get(['id', 'gender']);
+        $schoolGender = $schools->pluck('gender', 'id');
 
         $currentLoads = [];
         $targetSchoolIds = [];
         if ($scope === 'all') {
-            $targetSchoolIds = $allSchoolIds;
+            $targetSchoolIds = $schools->pluck('id')->all();
         } else {
             // المتبقّي فقط — مع احتساب أحمال الموزّعين حاليًا
-            foreach ($allSchoolIds as $sid) {
+            foreach ($schools->pluck('id') as $sid) {
                 if ($existing->has($sid)) {
                     $sup = $existing[$sid];
                     $currentLoads[$sup] = ($currentLoads[$sup] ?? 0) + ($metrics[$sid]['weight'] ?? self::BASE);
@@ -125,12 +170,24 @@ class DistributionService
             }
         }
 
-        $weights = [];
+        // قسّم المدارس المستهدفة حسب النوع
+        $segments = ['girls' => [], 'boys' => [], 'mixed' => []];
         foreach ($targetSchoolIds as $sid) {
-            $weights[$sid] = $metrics[$sid]['weight'] ?? self::BASE;
+            $key = match ($schoolGender[$sid] ?? null) {
+                'girls' => 'girls',
+                'boys' => 'boys',
+                default => 'mixed',
+            };
+            $segments[$key][$sid] = $metrics[$sid]['weight'] ?? self::BASE;
         }
 
-        $result = $this->distributor->handle($weights, $supervisors, $currentLoads);
+        $result = [];
+        $warnings = [];
+
+        // مدارس البنات ← الموجِّهات، ومدارس البنين ← الموجِّهون، والمشتركة ← الجميع
+        $this->distributeSegment($segments['girls'], $femaleSupervisors, $currentLoads, $metrics, $result, $warnings, 'مدرسة بنات بلا موجِّهات');
+        $this->distributeSegment($segments['boys'], $maleSupervisors, $currentLoads, $metrics, $result, $warnings, 'مدرسة بنين بلا موجِّهين');
+        $this->distributeSegment($segments['mixed'], $allSupervisors, $currentLoads, $metrics, $result, $warnings, 'مدرسة مشتركة بلا موجِّهين');
 
         // إثراء المعاينة بالأسماء
         $schoolNames = School::whereIn('id', array_keys($result))->pluck('name', 'id');
@@ -145,7 +202,7 @@ class DistributionService
             ];
         }
 
-        return ['assignments' => $preview];
+        return ['assignments' => $preview, 'warning' => $warnings ? implode('، ', $warnings) : null];
     }
 
     /** حفظ مجموعة إسنادات (تلقائي أو يدوي). */
@@ -180,10 +237,46 @@ class DistributionService
 
     /* ===================== مساعدات ===================== */
 
+    /**
+     * يوزّع قطاعًا من المدارس على مجموعة موجِّهين، يراكم النتيجة والأحمال، ويسجّل تحذيرًا إن لم يوجد موجِّهون.
+     *
+     * @param  array<int, float>  $weights  [school_id => weight]
+     * @param  list<int>  $supervisorIds
+     * @param  array<int, float>  $loads  [supervisor_id => load] — يُحدَّث بالمرجع
+     * @param  array<int, array{weight:float}>  $metrics
+     * @param  array<int, int>  $result  [school_id => supervisor_id] — يُحدَّث بالمرجع
+     * @param  list<string>  $warnings  — يُحدَّث بالمرجع
+     */
+    private function distributeSegment(array $weights, array $supervisorIds, array &$loads, array $metrics, array &$result, array &$warnings, string $noSupervisorLabel): void
+    {
+        if (empty($weights)) {
+            return;
+        }
+
+        if (empty($supervisorIds)) {
+            $warnings[] = count($weights).' '.$noSupervisorLabel;
+
+            return;
+        }
+
+        $assignment = $this->distributor->handle($weights, $supervisorIds, $loads);
+        $result += $assignment;
+        $this->accumulateLoads($loads, $assignment, $metrics);
+    }
+
+    /** يراكم أوزان الإسناد على أحمال الموجِّهين (تُحدَّث بالمرجع). */
+    private function accumulateLoads(array &$loads, array $assignment, array $metrics): void
+    {
+        foreach ($assignment as $schoolId => $supId) {
+            $loads[$supId] = ($loads[$supId] ?? 0) + ($metrics[$schoolId]['weight'] ?? self::BASE);
+        }
+    }
+
     /** مقاييس كل مدرسة لقسم معيّن في العام المختار. @return array<int, array{teachers:int,coordinators:int,required_visits:int,weight:float}> */
     private function schoolMetrics(int $departmentId): array
     {
         $teachers = Teacher::where('department_id', $departmentId)
+            ->where('is_active', true)
             ->with('classification:id,required_visits')
             ->get(['id', 'school_id', 'classification_id']);
         $coordinators = Coordinator::where('department_id', $departmentId)->get(['id', 'school_id']);
