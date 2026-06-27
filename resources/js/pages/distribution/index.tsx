@@ -76,6 +76,7 @@ interface PageProps {
     view?: 'departments' | 'board';
     // مستوى الأقسام (رئيس التوجيه)
     departmentCards?: DeptBoard[];
+    schoolsTotal?: number;
     // مستوى اللوحة
     departments?: { id: number; name: string }[];
     selectedDepartmentId?: number | null;
@@ -321,7 +322,7 @@ function BoardLevel({ departments, selectedDepartmentId, overview, preview, canD
 }
 
 /* ===================== مستوى الأقسام (رئيس التوجيه) ===================== */
-function DepartmentsLevel({ departmentCards }: Readonly<{ departmentCards: DeptBoard[] }>) {
+function DepartmentsLevel({ departmentCards, schoolsTotal }: Readonly<{ departmentCards: DeptBoard[]; schoolsTotal: number }>) {
     const totals = aggregate(departmentCards);
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -330,7 +331,7 @@ function DepartmentsLevel({ departmentCards }: Readonly<{ departmentCards: DeptB
                 <PageHeader title="توزيع المدارس على الموجهين" description="اختر القسم لعرض لوحة توزيع مدارسه على موجّهيه" />
 
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <StatCard title="إجمالي المدارس" value={totals.total} icon={SchoolIcon} tone="primary" />
+                    <StatCard title="إجمالي المدارس" value={schoolsTotal} icon={SchoolIcon} tone="primary" />
                     <StatCard title="المُسندة (إجمالًا)" value={totals.done} icon={SchoolIcon} tone="success" />
                     <StatCard title="نسبة التوزيع" value={`${totals.completion}%`} icon={Scale} tone="info" />
                     <StatCard title="الأقسام" value={departmentCards.length} icon={Building2} tone="info" />
@@ -360,7 +361,7 @@ function DepartmentsLevel({ departmentCards }: Readonly<{ departmentCards: DeptB
 /* ===================== التبديل بين المستويات ===================== */
 export default function DistributionIndex(props: Readonly<PageProps>) {
     if (props.view === 'departments') {
-        return <DepartmentsLevel departmentCards={props.departmentCards ?? []} />;
+        return <DepartmentsLevel departmentCards={props.departmentCards ?? []} schoolsTotal={props.schoolsTotal ?? 0} />;
     }
 
     return (

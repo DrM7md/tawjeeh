@@ -32,6 +32,7 @@ class DistributionController extends Controller
             return Inertia::render('distribution/index', [
                 'view' => 'departments',
                 'departmentCards' => $this->service->departmentBoards(),
+                'schoolsTotal' => $this->service->activeSchoolsCount(),
             ]);
         }
 

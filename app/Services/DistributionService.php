@@ -46,7 +46,8 @@ class DistributionService
     public function departmentBoards(): array
     {
         $departments = Department::orderBy('name')->get(['id', 'name']);
-        $schoolsTotal = School::where('is_active', true)->count();
+        $schoolsTotal = $this->activeSchoolsCount();
+        // ملاحظة: كل قسم يغطّي كامل المدارس، لذا total يتكرّر عمدًا لكل بطاقة قسم.
 
         $assignedByDept = SchoolAssignment::query()
             ->selectRaw('department_id, COUNT(DISTINCT school_id) as c')
@@ -74,6 +75,12 @@ class DistributionService
                 'completion' => $schoolsTotal ? round($assigned / $schoolsTotal * 100, 1) : 0,
             ];
         })->all();
+    }
+
+    /** عدد المدارس المُفعّلة المميّزة (المرجع الحقيقي لإجمالي المدارس، بلا تكرار عبر الأقسام). */
+    public function activeSchoolsCount(): int
+    {
+        return School::where('is_active', true)->count();
     }
 
     /** نظرة شاملة على توزيع قسم: الموجهون + أحمالهم + المدارس + العدالة. */
