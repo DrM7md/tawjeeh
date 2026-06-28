@@ -2,12 +2,12 @@ import { NavMain } from '@/components/nav-main';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Award, Building2, CalendarRange, ClipboardCheck, ClipboardList, FolderCheck, LayoutGrid, Layers, Network, School, Settings2, ShieldCheck, TrendingUp, UserCheck, Users } from 'lucide-react';
+import { Award, Building2, CalendarDays, ClipboardCheck, ClipboardList, FolderCheck, LayoutGrid, Layers, Network, School, Settings2, TrendingUp, UserCheck, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
     { title: 'لوحة التحكم', url: '/dashboard', icon: LayoutGrid },
-    { title: 'الأعوام الدراسية', url: '/academic', icon: CalendarRange, permission: 'academic.view' },
+    { title: 'التقويم', url: '/calendar', icon: CalendarDays, permission: 'calendar.view' },
     { title: 'توزيع المدارس', url: '/distribution', icon: Network, permission: 'distribution.view' },
     { title: 'التصنيف والالتزام', url: '/classification', icon: Layers, permission: 'classification.view' },
     { title: 'خطة الموجّه', url: '/planning', icon: ClipboardList, permission: 'planning.view.own' },
@@ -23,7 +23,6 @@ const organizationNavItems: NavItem[] = [
     { title: 'المدارس', url: '/schools', icon: School, permission: 'schools.view' },
     { title: 'المنسقون', url: '/coordinators', icon: UserCheck, permission: 'coordinators.view' },
     { title: 'المستخدمون', url: '/users', icon: Users, permission: 'users.view' },
-    { title: 'الأدوار والصلاحيات', url: '/roles', icon: ShieldCheck, permission: 'roles.view' },
 ];
 
 // أخرى — الإعدادات تجمع (إعدادات الهيكل/الأدوار/سجل النشاط/النسخ الاحتياطي + الحساب)

@@ -22,6 +22,8 @@ class NotificationType
 
     public const IMPROVEMENT_REVIEW_DUE = 'improvement_review_due';
 
+    public const TASK_ASSIGNED = 'task_assigned';
+
     /**
      * تعريف كل نوع: التسمية، الوصف، أيقونة الواجهة، والمستلمون الافتراضيون.
      *
@@ -71,6 +73,13 @@ class NotificationType
                 'icon' => 'review',
                 'default_roles' => [Permissions::ROLE_SUPERVISOR],
                 'default_department_scoped' => true,
+            ],
+            self::TASK_ASSIGNED => [
+                'label' => 'مهمة جديدة في التقويم',
+                'description' => 'عند إسناد مهمة في التقويم إليك (للجميع/لرؤساء الأقسام/لك تحديدًا) — تصل للمُسنَد إليهم.',
+                'icon' => 'calendar',
+                'default_roles' => [Permissions::ROLE_HEAD, Permissions::ROLE_ASSISTANT, Permissions::ROLE_DEPARTMENT_HEAD, Permissions::ROLE_SUPERVISOR],
+                'default_department_scoped' => false,
             ],
         ];
     }

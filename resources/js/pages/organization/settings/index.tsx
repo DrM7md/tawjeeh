@@ -9,10 +9,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
-import { type BreadcrumbItem, type Grade, type Stage, type TeacherClassification } from '@/types';
+import { type BreadcrumbItem, type CalendarEventType, type Grade, type Stage, type TeacherClassification } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { type ColumnDef } from '@tanstack/react-table';
-import { ClipboardCheck, GraduationCap, Layers, type LucideIcon, Pencil, Plus, Trash2, Users, X } from 'lucide-react';
+import { CalendarClock, ClipboardCheck, GraduationCap, Layers, type LucideIcon, Pencil, Plus, Trash2, Users, X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -25,12 +25,13 @@ export default function OrgSettingsIndex({
     stages,
     classifications,
     grades,
-}: Readonly<{ stages: Stage[]; classifications: TeacherClassification[]; grades: Grade[] }>) {
+    eventTypes,
+}: Readonly<{ stages: Stage[]; classifications: TeacherClassification[]; grades: Grade[]; eventTypes: CalendarEventType[] }>) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="إعدادات الهيكل" />
             <div className="flex flex-col gap-6 p-4 md:p-6">
-                <PageHeader title="إعدادات الهيكل" description="المراحل والصفوف وتصنيفات المعلمين واستمارة التحكيم" />
+                <PageHeader title="إعدادات الهيكل" description="المراحل والصفوف وتصنيفات المعلمين وأنواع أحداث التقويم واستمارة التحكيم" />
 
                 {/* لوحة بطاقات شبكية — عدّة جداول في الصف الواحد، تتمدّد تلقائيًا مع زيادة الأقسام */}
                 <div className="grid items-start gap-6 lg:grid-cols-2 xl:grid-cols-3">
@@ -38,6 +39,7 @@ export default function OrgSettingsIndex({
                     <GradesSection grades={grades} stages={stages} />
                     <ReviewFormCard />
                     <ClassificationsSection classifications={classifications} />
+                    <EventTypesSection eventTypes={eventTypes} />
                 </div>
             </div>
         </AppLayout>
@@ -354,6 +356,126 @@ function GradesSection({ grades, stages }: Readonly<{ grades: Grade[]; stages: S
                 onConfirm={() =>
                     deleting &&
                     form.delete(`/grades/${deleting.id}`, {
+                        onSuccess: () => {
+                            setDeleting(null);
+                            toast.success('تم الحذف');
+                        },
+                    })
+                }
+            />
+        </SectionCard>
+    );
+}
+
+/* ===================== أنواع أحداث التقويم ===================== */
+function EventTypesSection({ eventTypes }: { eventTypes: CalendarEventType[] }) {
+    const [open, setOpen] = useState(false);
+    const [editing, setEditing] = useState<CalendarEventType | null>(null);
+    const [deleting, setDeleting] = useState<CalendarEventType | null>(null);
+    const form = useForm<{ name: string; color: string; has_time: boolean; is_default: boolean }>({
+        name: '',
+        color: '#0ea5e9',
+        has_time: false,
+        is_default: false,
+    });
+
+    const openCreate = () => {
+        setEditing(null);
+        form.reset();
+        form.clearErrors();
+        setOpen(true);
+    };
+    const openEdit = (t: CalendarEventType) => {
+        setEditing(t);
+        form.clearErrors();
+        form.setData({ name: t.name, color: t.color ?? '#0ea5e9', has_time: t.has_time, is_default: t.is_default });
+        setOpen(true);
+    };
+    const submit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const opts = {
+            onSuccess: () => {
+                setOpen(false);
+                toast.success('تم الحفظ');
+            },
+        };
+        editing ? form.put(`/calendar-event-types/${editing.id}`, opts) : form.post('/calendar-event-types', opts);
+    };
+
+    const columns: ColumnDef<CalendarEventType>[] = [
+        {
+            accessorKey: 'name',
+            header: 'النوع',
+            cell: ({ row }) => (
+                <div className="flex items-center gap-2">
+                    <span className="size-3 rounded-full" style={{ backgroundColor: row.original.color ?? '#94a3b8' }} />
+                    <span className="font-medium">{row.original.name}</span>
+                    {row.original.is_default && <Badge variant="secondary">افتراضي</Badge>}
+                </div>
+            ),
+        },
+        {
+            id: 'has_time',
+            header: 'وقت/مكان',
+            cell: ({ row }) => (row.original.has_time ? <Badge variant="outline">نعم</Badge> : <span className="text-muted-foreground">—</span>),
+        },
+        {
+            id: 'actions',
+            header: '',
+            cell: ({ row }) => (
+                <div className="flex justify-end gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)}>
+                        <Pencil className="size-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => setDeleting(row.original)}>
+                        <Trash2 className="text-destructive size-4" />
+                    </Button>
+                </div>
+            ),
+        },
+    ];
+
+    return (
+        <SectionCard title="أنواع أحداث التقويم" icon={CalendarClock} accent="amber" count={eventTypes.length} addLabel="إضافة نوع" onAdd={openCreate}>
+            <DataTable columns={columns} data={eventTypes} searchable={false} pageSize={5} />
+
+            <FormDialog
+                open={open}
+                onOpenChange={setOpen}
+                title={editing ? 'تعديل نوع' : 'إضافة نوع'}
+                onSubmit={submit}
+                loading={form.processing}
+            >
+                <FormSection>
+                    <div className="space-y-2">
+                        <Label htmlFor="et_name">الاسم</Label>
+                        <Input id="et_name" placeholder="مثال: ورشة عمل، زيارة ميدانية…" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+                        {form.errors.name && <p className="text-destructive text-xs">{form.errors.name}</p>}
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="et_color">اللون</Label>
+                        <Input id="et_color" type="color" value={form.data.color} onChange={(e) => form.setData('color', e.target.value)} className="h-10 w-20 p-1" />
+                    </div>
+                </FormSection>
+                <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" checked={form.data.has_time} onChange={(e) => form.setData('has_time', e.target.checked)} />
+                    يُظهر حقول الوقت والمكان (مثل الاجتماعات)
+                </label>
+                <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" checked={form.data.is_default} onChange={(e) => form.setData('is_default', e.target.checked)} />
+                    النوع المختار افتراضيًا عند إضافة مهمة
+                </label>
+            </FormDialog>
+
+            <ConfirmDialog
+                open={!!deleting}
+                onOpenChange={(o) => !o && setDeleting(null)}
+                title="حذف النوع"
+                description={`سيتم حذف «${deleting?.name}». المهام المرتبطة به ستبقى بلا نوع.`}
+                loading={form.processing}
+                onConfirm={() =>
+                    deleting &&
+                    form.delete(`/calendar-event-types/${deleting.id}`, {
                         onSuccess: () => {
                             setDeleting(null);
                             toast.success('تم الحذف');

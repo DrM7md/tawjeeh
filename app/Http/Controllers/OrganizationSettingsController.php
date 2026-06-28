@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CalendarEventType;
 use App\Models\Grade;
 use App\Models\Stage;
 use App\Models\TeacherClassification;
@@ -22,7 +23,51 @@ class OrganizationSettingsController extends Controller
             'stages' => Stage::orderBy('sort_order')->get(),
             'classifications' => TeacherClassification::orderBy('required_visits', 'desc')->get(),
             'grades' => Grade::with(['stage:id,name', 'tracks:id,grade_id,name,sort_order'])->orderBy('sort_order')->get(),
+            'eventTypes' => CalendarEventType::orderBy('sort_order')->get(),
         ]);
+    }
+
+    // ---------- أنواع أحداث التقويم ----------
+    public function storeEventType(Request $request): RedirectResponse
+    {
+        $data = $this->validateEventType($request);
+        $data['sort_order'] = (int) CalendarEventType::max('sort_order') + 1; // ترتيب تلقائي (append)
+        $this->applyDefaultType(CalendarEventType::create($data));
+
+        return back()->with('success', 'تم إضافة النوع');
+    }
+
+    public function updateEventType(Request $request, CalendarEventType $eventType): RedirectResponse
+    {
+        $eventType->update($this->validateEventType($request));
+        $this->applyDefaultType($eventType);
+
+        return back()->with('success', 'تم تحديث النوع');
+    }
+
+    public function destroyEventType(CalendarEventType $eventType): RedirectResponse
+    {
+        $eventType->delete();
+
+        return back()->with('success', 'تم حذف النوع');
+    }
+
+    private function validateEventType(Request $request): array
+    {
+        return $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'color' => ['nullable', 'string', 'max:20'],
+            'has_time' => ['boolean'],
+            'is_default' => ['boolean'],
+        ]);
+    }
+
+    /** نوع افتراضي واحد فقط: عند تعيين نوع كافتراضي يُلغى عن البقية. */
+    private function applyDefaultType(CalendarEventType $type): void
+    {
+        if ($type->is_default) {
+            CalendarEventType::whereKeyNot($type->id)->where('is_default', true)->update(['is_default' => false]);
+        }
     }
 
     // ---------- المراحل ----------

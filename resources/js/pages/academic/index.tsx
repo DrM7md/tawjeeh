@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'لوحة التحكم', href: '/dashboard' },
+    { title: 'الإعدادات', href: '/settings' },
     { title: 'الأعوام الدراسية', href: '/academic' },
 ];
 

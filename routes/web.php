@@ -3,6 +3,7 @@
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\ClassificationController;
 use App\Http\Controllers\ContextController;
 use App\Http\Controllers\CoordinatorController;
@@ -138,6 +139,17 @@ Route::middleware(['auth'])->group(function () {
 
     // تبديل العام/الفصل المختار — متاح لكل مستخدم
     Route::post('context', [ContextController::class, 'update'])->name('context.update');
+
+    /* ===================== التقويم والمهام ===================== */
+    Route::middleware('can:calendar.view')->group(function () {
+        Route::get('calendar', [CalendarController::class, 'index'])->name('calendar.index');
+        Route::post('calendar', [CalendarController::class, 'store'])->name('calendar.store');
+        // مسارات ساكنة قبل {task} كي لا يلتقطها الربط التلقائي
+        Route::post('calendar/{task}/move', [CalendarController::class, 'move'])->name('calendar.move');
+        Route::post('calendar/{task}/toggle', [CalendarController::class, 'toggle'])->name('calendar.toggle');
+        Route::put('calendar/{task}', [CalendarController::class, 'update'])->name('calendar.update');
+        Route::delete('calendar/{task}', [CalendarController::class, 'destroy'])->name('calendar.destroy');
+    });
 
     /* ===================== الإشعارات ===================== */
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
@@ -320,6 +332,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('grades', [OrganizationSettingsController::class, 'storeGrade'])->name('grades.store');
         Route::put('grades/{grade}', [OrganizationSettingsController::class, 'updateGrade'])->name('grades.update');
         Route::delete('grades/{grade}', [OrganizationSettingsController::class, 'destroyGrade'])->name('grades.destroy');
+
+        // أنواع أحداث التقويم
+        Route::post('calendar-event-types', [OrganizationSettingsController::class, 'storeEventType'])->name('calendar-event-types.store');
+        Route::put('calendar-event-types/{eventType}', [OrganizationSettingsController::class, 'updateEventType'])->name('calendar-event-types.update');
+        Route::delete('calendar-event-types/{eventType}', [OrganizationSettingsController::class, 'destroyEventType'])->name('calendar-event-types.destroy');
 
         /* ===================== استمارة التحكيم (المجالات/البنود/المؤشرات) ===================== */
         Route::get('review-form', [ReviewFormController::class, 'index'])->name('review-form.index');

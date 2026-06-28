@@ -52,6 +52,41 @@ class NotificationDispatcher
     }
 
     /**
+     * يرسل إشعارًا لمجموعة مستخدمين محدّدين مباشرةً (تجاوز مطابقة الأدوار/القسم)،
+     * مع احترام تفعيل النوع وإعداد البث. يُستخدم للإسناد المباشر (مهام التقويم).
+     *
+     * @param  array{title:string, message:string, url?:string|null}  $payload
+     * @param  Collection<int, User>  $users
+     */
+    public function sendToUsers(string $type, array $payload, Collection $users, ?int $excludeUserId = null): void
+    {
+        $config = NotificationSetting::for($type);
+
+        if ($config === null || ! $config['enabled']) {
+            return;
+        }
+
+        if ($excludeUserId !== null) {
+            $users = $users->reject(fn (User $u) => $u->id === $excludeUserId);
+        }
+
+        if ($users->isEmpty()) {
+            return;
+        }
+
+        $def = NotificationType::definition($type);
+
+        Notification::send($users, new DomainNotification(
+            typeKey: $type,
+            title: $payload['title'],
+            message: $payload['message'],
+            url: $payload['url'] ?? null,
+            icon: $def['icon'] ?? null,
+            live: (bool) $config['live'],
+        ));
+    }
+
+    /**
      * المستخدمون النشطون الحاملون لأحد الأدوار، محصورين بنطاق القسم عند الطلب.
      *
      * @param  list<string>  $roles

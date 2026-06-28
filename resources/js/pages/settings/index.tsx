@@ -3,7 +3,7 @@ import { usePermissions } from '@/components/shared/can';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { type LucideIcon, Bell, ClipboardCheck, Database, FolderCheck, History, Layers, Palette, ScrollText, ShieldCheck, KeyRound, ChevronLeft } from 'lucide-react';
+import { type LucideIcon, Bell, CalendarRange, ClipboardCheck, Database, FolderCheck, History, Layers, Palette, ScrollText, ShieldCheck, KeyRound, ChevronLeft } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'لوحة التحكم', href: '/dashboard' },
@@ -19,6 +19,7 @@ interface Card {
 }
 
 const systemCards: Card[] = [
+    { title: 'الأعوام الدراسية', description: 'إدارة الأعوام والفصول الدراسية والعام الفعّال', href: '/academic', icon: CalendarRange, permission: 'academic.view' },
     { title: 'إعدادات الهيكل', description: 'المراحل والصفوف والتصنيفات والقوائم المنسدلة', href: '/organization-settings', icon: Layers, permission: 'settings.manage' },
     { title: 'قوالب الإشراف', description: 'مجالات ومعايير استمارة الزيارة الصفية لكل قسم', href: '/supervision-templates', icon: ClipboardCheck, permission: 'settings.manage' },
     { title: 'قوالب تقييم الملفات', description: 'بنود تقييم حافظة أعمال المنسق القابلة للضبط', href: '/portfolio-templates', icon: FolderCheck, permission: 'settings.manage' },

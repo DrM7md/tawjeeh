@@ -49,6 +49,10 @@ class Permissions
                 'classification.classify' => 'تصنيف معلم/منسق',
                 'classification.approve' => 'اعتماد التصنيف',
             ]],
+            'calendar' => ['label' => 'التقويم والمهام', 'permissions' => [
+                'calendar.view' => 'عرض التقويم وإدارة مهامه الشخصية',
+                'calendar.assign' => 'إسناد مهام للآخرين',
+            ]],
             'academic' => ['label' => 'الأعوام والفصول', 'permissions' => [
                 'academic.view' => 'عرض الأعوام والفصول',
                 'academic.manage' => 'إدارة الأعوام والفصول',
@@ -144,6 +148,7 @@ class Permissions
             'schools.view', 'schools.manage',
             'coordinators.view', 'coordinators.manage',
             'classification.view', 'classification.classify', 'classification.approve',
+            'calendar.view', 'calendar.assign',
             'academic.view',
             'distribution.view', 'distribution.auto', 'distribution.manual', 'distribution.redistribute',
             'import.view', 'import.run',
@@ -160,6 +165,7 @@ class Permissions
             'schools.view',
             'coordinators.view',
             'classification.view', 'classification.classify',
+            'calendar.view', 'calendar.assign',
             'academic.view',
             'import.view', 'import.run',
             'planning.view.own', 'planning.create',

@@ -11,13 +11,14 @@ import {
 import { cn } from '@/lib/utils';
 import { type NotificationItem, type SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { Award, Bell, CheckCheck, ClipboardCheck, Inbox, type LucideIcon } from 'lucide-react';
+import { Award, Bell, CalendarDays, CheckCheck, ClipboardCheck, Inbox, type LucideIcon } from 'lucide-react';
 import { useEffect } from 'react';
 
 /** أيقونة الإشعار حسب مفتاح النوع القادم من الخادم. */
 const ICONS: Record<string, LucideIcon> = {
     visit: ClipboardCheck,
     review: Award,
+    calendar: CalendarDays,
     bell: Bell,
 };
 

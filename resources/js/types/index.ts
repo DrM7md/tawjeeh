@@ -61,6 +61,15 @@ export interface TeacherClassification {
     color: string | null;
 }
 
+export interface CalendarEventType {
+    id: number;
+    name: string;
+    color: string | null;
+    has_time: boolean;
+    is_default: boolean;
+    sort_order?: number;
+}
+
 export interface ReviewCriterion {
     id: number;
     name: string;
