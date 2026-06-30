@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class PortfolioReviewItem extends Model
 {
-    protected $fillable = ['portfolio_review_template_id', 'criterion_text', 'max_score', 'sort_order'];
+    protected $fillable = ['portfolio_review_template_id', 'criterion_text', 'indicators', 'max_score', 'sort_order'];
 
     protected function casts(): array
     {

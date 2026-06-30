@@ -114,10 +114,13 @@ export default function PortfolioShow({ review, canFinalize, canEdit }: Readonly
                     {scores.map((s) => (
                         <div key={s.id} className="border-border/60 space-y-3 rounded-xl border p-4">
                             <div className="flex flex-wrap items-start justify-between gap-3">
-                                <span className="text-sm font-medium">
-                                    {s.criterion_text}
-                                    <span className="text-muted-foreground tnum text-xs"> / {s.max_score}</span>
-                                </span>
+                                <div className="min-w-0 flex-1">
+                                    <span className="text-sm font-medium">
+                                        {s.criterion_text}
+                                        <span className="text-muted-foreground tnum text-xs"> / {s.max_score}</span>
+                                    </span>
+                                    {s.indicators && <p className="text-muted-foreground mt-1 text-xs leading-6">{s.indicators}</p>}
+                                </div>
                                 {s.max_score <= 10 ? (
                                     <ToggleGroup
                                         type="single"
@@ -152,7 +155,7 @@ export default function PortfolioShow({ review, canFinalize, canEdit }: Readonly
                             </div>
 
                             <Input
-                                placeholder="ملاحظة (اختياري)"
+                                placeholder="الملاحظات والتوصيات"
                                 value={form.data.scores[s.id]?.note ?? ''}
                                 onChange={(e) => setNote(s.id, e.target.value)}
                                 disabled={readOnly}

@@ -29,7 +29,7 @@ export default function PortfolioTemplatesIndex({ templates }: Readonly<PageProp
     const [deletingItem, setDeletingItem] = useState<PortfolioReviewItem | null>(null);
 
     const templateForm = useForm<{ name: string; description: string; is_active: boolean }>({ name: '', description: '', is_active: true });
-    const itemForm = useForm({ criterion_text: '', max_score: 5 });
+    const itemForm = useForm({ criterion_text: '', indicators: '', max_score: 5 });
 
     const remove = (url: string, onDone: () => void) =>
         router.delete(url, {
@@ -65,12 +65,12 @@ export default function PortfolioTemplatesIndex({ templates }: Readonly<PageProp
 
     const openItemCreate = (templateId: number) => {
         itemForm.clearErrors();
-        itemForm.setData({ criterion_text: '', max_score: 5 });
+        itemForm.setData({ criterion_text: '', indicators: '', max_score: 5 });
         setItemDialog({ templateId });
     };
     const openItemEdit = (templateId: number, item: PortfolioReviewItem) => {
         itemForm.clearErrors();
-        itemForm.setData({ criterion_text: item.criterion_text, max_score: item.max_score });
+        itemForm.setData({ criterion_text: item.criterion_text, indicators: item.indicators ?? '', max_score: item.max_score });
         setItemDialog({ templateId, data: item });
     };
     const submitItem = (e: React.FormEvent) => {
@@ -201,9 +201,20 @@ export default function PortfolioTemplatesIndex({ templates }: Readonly<PageProp
             >
                 <FormSection>
                     <div className="space-y-2">
-                        <Label htmlFor="itext">نص البند (المعيار)</Label>
+                        <Label htmlFor="itext">المجال (عنوان البند)</Label>
                         <Input id="itext" value={itemForm.data.criterion_text} onChange={(e) => itemForm.setData('criterion_text', e.target.value)} />
                         {itemForm.errors.criterion_text && <p className="text-destructive text-xs">{itemForm.errors.criterion_text}</p>}
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="iind">مؤشرات الأداء (اختياري)</Label>
+                        <textarea
+                            id="iind"
+                            rows={3}
+                            className="border-input bg-background w-full rounded-xl border px-3 py-2 text-sm"
+                            value={itemForm.data.indicators}
+                            onChange={(e) => itemForm.setData('indicators', e.target.value)}
+                        />
+                        {itemForm.errors.indicators && <p className="text-destructive text-xs">{itemForm.errors.indicators}</p>}
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="imax">الدرجة العظمى</Label>

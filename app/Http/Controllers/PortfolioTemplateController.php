@@ -57,6 +57,7 @@ class PortfolioTemplateController extends Controller
         $data = $this->validateItem($request);
         $template->items()->create([
             'criterion_text' => $data['criterion_text'],
+            'indicators' => $data['indicators'] ?? null,
             'max_score' => $data['max_score'],
             'sort_order' => (int) $template->items()->max('sort_order') + 1, // ترتيب تلقائي (append)
         ]);
@@ -91,6 +92,7 @@ class PortfolioTemplateController extends Controller
     {
         return $request->validate([
             'criterion_text' => ['required', 'string', 'max:1000'],
+            'indicators' => ['nullable', 'string', 'max:2000'],
             'max_score' => ['required', 'integer', 'min:1', 'max:100'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
         ]);

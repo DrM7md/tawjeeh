@@ -83,6 +83,7 @@ export interface PortfolioReviewItem {
     id: number;
     portfolio_review_template_id: number;
     criterion_text: string;
+    indicators: string | null;
     max_score: number;
     sort_order: number;
 }
@@ -101,6 +102,7 @@ export interface PortfolioReviewScore {
     id: number;
     portfolio_review_item_id: number | null;
     criterion_text: string;
+    indicators: string | null;
     max_score: number;
     score: number | null;
     note: string | null;

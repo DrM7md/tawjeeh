@@ -156,6 +156,7 @@ class PortfolioReviewService
             $review->scores()->create([
                 'portfolio_review_item_id' => $item->id,
                 'criterion_text' => $item->criterion_text,
+                'indicators' => $item->indicators,
                 'max_score' => $item->max_score,
                 'sort_order' => $item->sort_order,
             ]);

@@ -247,6 +247,8 @@ class VisitController extends Controller
                 'supervisor' => $visit->supervisor?->name,
                 'teacher' => $teacher?->name,
                 'visit_date' => $visit->visit_date?->toDateString(),
+                'day_name' => $this->arabicDay($visit->visit_date),
+                'hijri_date' => $this->hijriDate($visit->visit_date),
                 'visit_number' => $visit->visit_number,
                 'follow_up_type' => $visit->follow_up_type,
                 'section' => $visit->section,
@@ -257,6 +259,28 @@ class VisitController extends Controller
             'ratingLabels' => SupervisionRatings::LABELS,
             'generalNotes' => $visit->form?->general_notes,
         ]);
+    }
+
+    /** اسم اليوم بالعربية من تاريخ الزيارة. */
+    private function arabicDay(?\Illuminate\Support\Carbon $date): ?string
+    {
+        if (! $date || ! class_exists(\IntlDateFormatter::class)) {
+            return null;
+        }
+
+        return \IntlDateFormatter::create('ar', \IntlDateFormatter::FULL, \IntlDateFormatter::NONE, 'Asia/Qatar', \IntlDateFormatter::GREGORIAN, 'EEEE')
+            ->format($date);
+    }
+
+    /** التاريخ الهجري (أم القرى) بصيغة 1447-05-21. */
+    private function hijriDate(?\Illuminate\Support\Carbon $date): ?string
+    {
+        if (! $date || ! class_exists(\IntlDateFormatter::class)) {
+            return null;
+        }
+
+        return \IntlDateFormatter::create('en_US@calendar=islamic-umalqura', \IntlDateFormatter::NONE, \IntlDateFormatter::NONE, 'Asia/Qatar', \IntlDateFormatter::TRADITIONAL, 'yyyy-MM-dd')
+            ->format($date);
     }
 
     /** البيانات المشتركة لشاشة الاستمارة. @return array<string,mixed> */
